@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Execution Blueprint Tracker</title>
+  <meta name="description" content="Systems & AI Strategic Execution Blueprint — CSE (AI/ML) · GATE · Peak Physique · Sem 6 SGPA"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..900;1,14..32,300..900&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'] },
+          colors: {
+            /* Dark mode palette */
+            dm: {
+              canvas: '#0C0D12',
+              card:   '#17181F',
+              lift:   '#1E202A',
+              rim:    '#2A2C38',
+              label:  '#8E939D',
+              muted:  '#5A5F6E',
+            },
+            /* Light mode palette */
+            lm: {
+              canvas: '#F4F5F8',
+              card:   '#FFFFFF',
+              lift:   '#F0F1F5',
+              rim:    '#E3E5EC',
+              label:  '#686D76',
+              muted:  '#9EA3AE',
+            },
+            /* Accent */
+            blue:   { DEFAULT: '#2B56F5', dim: '#1A3BBF' },
+            grn:    { DEFAULT: '#1DB87A', dim: '#128054' },
+            purp:   { DEFAULT: '#7C4DFF', dim: '#5632CC' },
+            amber:  { DEFAULT: '#F5A623', dim: '#C4841A' },
+            rose:   { DEFAULT: '#F53B57', dim: '#C42B43' },
+          },
+          borderRadius: { '4xl': '28px', '5xl': '36px' },
+          fontSize: {
+            '2xs': ['0.625rem', { lineHeight: '0.875rem' }],
+          },
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', ui-sans-serif, system-ui;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100dvh;
+    }
+
+    /* ── Scrollbar ────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 0; height: 0; }
+
+    /* ── Canvas & Card Tokens ─────────────────────────────── */
+    .dm-canvas { background-color: #0C0D12; color: #FFFFFF; }
+    .dm-card   { background-color: #17181F; }
+    .dm-lift   { background-color: #1E202A; }
+    .dm-rim    { background-color: #2A2C38; }
+
+    .lm-canvas { background-color: #F4F5F8; color: #111214; }
+    .lm-card   { background-color: #FFFFFF; }
+    .lm-lift   { background-color: #F0F1F5; }
+    .lm-rim    { background-color: #E3E5EC; }
+
+    /* ── Squircle Spec — 24px everywhere ─────────────────── */
+    .sq  { border-radius: 24px; }
+    .sq-sm { border-radius: 16px; }
+    .sq-xs { border-radius: 12px; }
+    .sq-pill { border-radius: 999px; }
+
+    /* ── Typography ───────────────────────────────────────── */
+    .t-hero { font-size: clamp(2rem, 5vw, 3.25rem); font-weight: 900; letter-spacing: -0.04em; line-height: 1.05; }
+    .t-sub  { font-size: clamp(0.8rem, 1.5vw, 0.9rem); font-weight: 500; }
+    .t-label { font-size: 0.625rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+    .t-data  { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; letter-spacing: -0.03em; }
+    .t-card-title { font-size: 0.8125rem; font-weight: 700; }
+    .t-card-sub   { font-size: 0.6875rem; font-weight: 500; }
+
+    /* ── Touch Targets ────────────────────────────────────── */
+    .touch { min-height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+    /* ── Transitions ──────────────────────────────────────── */
+    .tr { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .tr-slow { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+
+    /* ── Press feedback ───────────────────────────────────── */
+    .pressable:active { transform: scale(0.97); }
+
+    /* ── Progress ring ────────────────────────────────────── */
+    .ring-track { fill: none; stroke: #2A2C38; stroke-width: 5; }
+    .lm-canvas .ring-track { stroke: #E3E5EC; }
+    .ring-fill  { fill: none; stroke-width: 5; stroke-linecap: round; transform-origin: center; transform: rotate(-90deg); transition: stroke-dashoffset 0.6s cubic-bezier(0.4,0,0.2,1), stroke 0.3s; }
+
+    /* ── Progress bar ─────────────────────────────────────── */
+    .pbar-track { height: 5px; border-radius: 999px; background: #2A2C38; overflow: hidden; }
+    html:not(.dark) .pbar-track { background: #E3E5EC; }
+    .pbar-fill  { height: 100%; border-radius: 999px; transition: width 0.55s cubic-bezier(0.4,0,0.2,1); }
+
+    /* ── Pill track (horizontal scroll) ──────────────────── */
+    .pill-track { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; white-space: nowrap; }
+    .pill-track::-webkit-scrollbar { display: none; }
+
+    /* ── Checkbox custom ──────────────────────────────────── */
+    .cb-box {
+      width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0;
+      border: 2px solid #2A2C38; background: transparent; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+    }
+    html:not(.dark) .cb-box { border-color: #CBD5E1; }
+
+    /* ── Save indicator ───────────────────────────────────── */
+    #save-dot { transition: opacity 0.4s ease; opacity: 0; }
+
+    /* ── Fade-up entry ────────────────────────────────────── */
+    @keyframes fu { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+    .fu  { animation: fu 0.38s cubic-bezier(0.4,0,0.2,1) both; }
+    .fu1 { animation-delay: 0.04s; }
+    .fu2 { animation-delay: 0.08s; }
+    .fu3 { animation-delay: 0.12s; }
+    .fu4 { animation-delay: 0.16s; }
+    .fu5 { animation-delay: 0.20s; }
+
+    /* ── Date input themed ────────────────────────────────── */
+    input[type="date"] { color-scheme: dark; }
+    html:not(.dark) input[type="date"] { color-scheme: light; }
+
+    /* ── Separator — tone-layer only, no border line ──────── */
+    .sep { height: 1px; background: #2A2C38; border: none; }
+    html:not(.dark) .sep { background: #E3E5EC; }
+
+    /* ── IV amber wash ────────────────────────────────────── */
+    .iv-wash { background: rgba(245,166,35,0.06); }
+    html:not(.dark) .iv-wash { background: rgba(245,166,35,0.08); }
+  </style>
+</head>
+
+<!-- ══════════════════════════════════════════════════════════
+     BODY — canvas background driven purely by tone layer
+════════════════════════════════════════════════════════════ -->
+<body class="bg-dm-canvas text-white dark:text-white transition-colors duration-300" id="body-root">
+
+<div class="max-w-[900px] mx-auto px-4 sm:px-6 pb-16">
+
+  <!-- ════════════════════════════════════════════════════════
+       SECTION 1 — HERO HEADER (top 35% whitespace + typography)
+       One-handed ergonomics: massive weighted type, zero clutter
+  ═══════════════════════════════════════════════════════════ -->
+  <header class="pt-10 pb-8 fu">
+    <!-- Wordmark row -->
+    <div class="flex items-start justify-between gap-4">
+      <div class="flex-1">
+        <!-- Phase / context strip — label only, no decorative chrome -->
+        <p class="t-label" id="hero-phase-label" style="color:#8E939D">Phase 1 · Nov 2026</p>
+        <!-- Hero title -->
+        <h1 class="t-hero mt-2" id="hero-date-display">
+          Nov 01&thinsp;<span id="hero-weekday" style="color:#8E939D;font-weight:300">Sun</span>
+        </h1>
+        <!-- Sub descriptor -->
+        <p class="t-sub mt-3" style="color:#8E939D" id="hero-task-preview">Loading today's focus…</p>
+      </div>
+
+      <!-- Theme toggle — capsule, no icon emoji decoration -->
+      <div class="flex flex-col items-end gap-3 pt-1 flex-shrink-0">
+        <button id="theme-btn" onclick="toggleTheme()"
+          class="touch sq-pill pressable tr px-5 text-xs font-bold tracking-wide"
+          style="background:#17181F;color:#8E939D;min-width:88px">
+          <span id="theme-lbl">Dark</span>
+        </button>
+        <!-- Save indicator — subtle, non-intrusive -->
+        <div id="save-dot" class="flex items-center gap-2">
+          <span class="inline-block w-1.5 h-1.5 sq-pill" style="background:#1DB87A"></span>
+          <span style="font-size:0.6rem;font-weight:700;color:#1DB87A;letter-spacing:.06em;text-transform:uppercase">Saved</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ════════════════════════════════════════════════════════
+       SECTION 2 — STAT SHELF
+       Fluid row, content-driven cells, nested tone separation
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="sq dm-card lm-card p-5 fu fu1 mb-4">
+    <div class="grid grid-cols-3 gap-px" style="background:#2A2C38" id="stat-grid">
+
+      <!-- Daily ring -->
+      <div class="dm-card lm-card p-4 flex flex-col gap-2 sq-xs" style="border-radius:0">
+        <p class="t-label" style="color:#8E939D">Today</p>
+        <div class="flex items-center gap-3 mt-1">
+          <svg width="48" height="48" viewBox="0 0 48 48" class="flex-shrink-0">
+            <circle cx="24" cy="24" r="19" class="ring-track"/>
+            <circle id="stat-ring" cx="24" cy="24" r="19"
+              class="ring-fill" stroke="#2B56F5"
+              stroke-dasharray="119.4" stroke-dashoffset="119.4"/>
+          </svg>
+          <div>
+            <p id="stat-daily-pct" class="t-data" style="line-height:1">0%</p>
+            <p id="stat-daily-frac" style="font-size:.7rem;font-weight:600;color:#8E939D;margin-top:2px">0 of 0</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overall bar -->
+      <div class="dm-card lm-card p-4 flex flex-col justify-between sq-xs" style="border-radius:0">
+        <p class="t-label" style="color:#8E939D">Blueprint</p>
+        <div>
+          <p id="stat-overall-pct" class="t-data mt-2" style="line-height:1">0%</p>
+          <div class="pbar-track mt-3">
+            <div id="stat-overall-bar" class="pbar-fill" style="width:0%;background:#2B56F5"></div>
+          </div>
+          <p style="font-size:.65rem;font-weight:600;color:#8E939D;margin-top:6px" id="stat-overall-sub">93 days total</p>
+        </div>
+      </div>
+
+      <!-- Reset cell -->
+      <div class="dm-card lm-card p-4 flex flex-col justify-between sq-xs" style="border-radius:0">
+        <p class="t-label" style="color:#8E939D">Storage</p>
+        <div class="flex flex-col gap-2 mt-2">
+          <p style="font-size:.65rem;font-weight:500;color:#5A5F6E">localStorage · in-browser</p>
+          <button onclick="resetData()" class="touch sq-xs pressable tr text-2xs font-bold tracking-wider"
+            style="color:#F53B57;background:rgba(245,59,87,.08);min-height:36px;border-radius:10px;padding:0 12px">
+            RESET DATA
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════
+       SECTION 3 — DATE NAVIGATION
+       Full-width shelf, 48px touch targets, date picker centered
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="sq dm-card lm-card p-3 fu fu2 mb-4">
+    <div class="flex items-center gap-2">
+
+      <button onclick="changeDay(-1)" id="prev-btn"
+        class="touch sq-sm pressable tr flex-shrink-0 px-4 font-bold text-xs tracking-wide"
+        style="background:#1E202A;color:#8E939D;min-width:72px;border-radius:16px">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:4px">
+          <path d="M9 11.5L4.5 7L9 2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Prev
+      </button>
+
+      <div class="flex-1 flex items-center justify-center gap-2">
+        <input type="date" id="date-picker"
+          min="2026-11-01" max="2027-02-01"
+          onchange="onDatePicked(this.value)"
+          class="touch sq-sm text-xs font-bold text-center tr flex-1 max-w-[180px] px-3"
+          style="background:#1E202A;color:inherit;border:none;outline:none;border-radius:16px"/>
+        <button onclick="goToToday()"
+          class="touch sq-sm pressable tr px-4 text-2xs font-black tracking-widest flex-shrink-0"
+          style="background:#2B56F5;color:#FFFFFF;border-radius:16px;min-width:64px">
+          TODAY
+        </button>
+      </div>
+
+      <button onclick="changeDay(1)" id="next-btn"
+        class="touch sq-sm pressable tr flex-shrink-0 px-4 font-bold text-xs tracking-wide"
+        style="background:#1E202A;color:#8E939D;min-width:72px;border-radius:16px">
+        Next
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-left:4px">
+          <path d="M5 2.5L9.5 7L5 11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════
+       SECTION 4 — BADGE PILL TRACK
+       Horizontal scroll, no wrap, status pills only
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="pill-track mb-4 fu fu3" id="badge-track">
+    <!-- Populated by JS -->
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       SECTION 5 — DAILY TASK BLOCK
+       Nested tone layers: card > lift panel inside
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="sq dm-card lm-card fu fu3 mb-4 overflow-hidden" id="task-block">
+    <!-- Populated by JS -->
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════
+       SECTION 6 — CHECKBOXES
+       Content-driven rows, no bento grid template
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="sq dm-card lm-card p-5 fu fu4 mb-4" id="check-section">
+    <div class="flex items-center justify-between mb-4">
+      <p class="t-label" style="color:#8E939D">Execution Log</p>
+      <p class="t-label" id="check-count-label" style="color:#5A5F6E">3 TASKS</p>
+    </div>
+    <div id="check-grid" class="flex flex-col gap-2">
+      <!-- Populated by JS -->
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════
+       SECTION 7 — TIME WINDOWS REFERENCE
+       Nested lift panels, no border lines — tone separation only
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="sq dm-card lm-card p-5 fu fu5">
+    <p class="t-label mb-4" style="color:#8E939D">Locked Daily Time Windows</p>
+    <div class="flex flex-col gap-2" id="time-grid">
+
+      <div class="sq-sm dm-lift lm-lift flex items-center gap-4 px-4 py-3">
+        <div class="w-2 h-2 sq-pill flex-shrink-0" style="background:#2B56F5"></div>
+        <div class="flex-1 min-w-0">
+          <p class="t-card-title">06:00 – 07:15 AM</p>
+          <p class="t-card-sub mt-0.5" style="color:#8E939D">Mind-Dependent Logic & Pseudocode</p>
+        </div>
+        <span class="t-label sq-pill px-2 py-1" style="background:rgba(43,86,245,.1);color:#2B56F5">LOGIC</span>
+      </div>
+
+      <div class="sq-sm dm-lift lm-lift flex items-center gap-4 px-4 py-3">
+        <div class="w-2 h-2 sq-pill flex-shrink-0" style="background:#1DB87A"></div>
+        <div class="flex-1 min-w-0">
+          <p class="t-card-title">07:15 – 08:00 AM</p>
+          <p class="t-card-sub mt-0.5" style="color:#8E939D">Peak Fitness / Physique Sprint</p>
+        </div>
+        <span class="t-label sq-pill px-2 py-1" style="background:rgba(29,184,122,.1);color:#1DB87A">GYM</span>
+      </div>
+
+      <div class="sq-sm dm-lift lm-lift flex items-center gap-4 px-4 py-3">
+        <div class="w-2 h-2 sq-pill flex-shrink-0" style="background:#F5A623"></div>
+        <div class="flex-1 min-w-0">
+          <p class="t-card-title">08:30 AM – 04:30 PM</p>
+          <p class="t-card-sub mt-0.5" style="color:#8E939D">College Academics · Sem 6 SGPA Focus</p>
+        </div>
+        <span class="t-label sq-pill px-2 py-1" style="background:rgba(245,166,35,.1);color:#F5A623">SEM 6</span>
+      </div>
+
+      <div class="sq-sm dm-lift lm-lift flex items-center gap-4 px-4 py-3">
+        <div class="w-2 h-2 sq-pill flex-shrink-0" style="background:#7C4DFF"></div>
+        <div class="flex-1 min-w-0">
+          <p class="t-card-title">05:00 – 07:00 PM</p>
+          <p class="t-card-sub mt-0.5" style="color:#8E939D">Rotational Slot — GATE / Mock Tests</p>
+        </div>
+        <span class="t-label sq-pill px-2 py-1" style="background:rgba(124,77,255,.1);color:#7C4DFF">GATE</span>
+      </div>
+
+      <div class="sq-sm dm-lift lm-lift flex items-center gap-4 px-4 py-3">
+        <div class="w-2 h-2 sq-pill flex-shrink-0" style="background:#5A5F6E"></div>
+        <div class="flex-1 min-w-0">
+          <p class="t-card-title">08:00 PM – 12:00 AM</p>
+          <p class="t-card-sub mt-0.5" style="color:#8E939D">Part-Time Work Shift · 4 Hours Fixed</p>
+        </div>
+        <span class="t-label sq-pill px-2 py-1" style="background:rgba(90,95,110,.12);color:#5A5F6E">WORK</span>
+      </div>
+
+    </div>
+  </section>
+
+</div><!-- /container -->
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT ENGINE
+════════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ── MASTER DATA ──────────────────────────────────────────── */
+const T = {
+  "2026-11-01":{f:"Nov 01",p:1,ph:"Phase 1 · Logic Formulation",task:"Mental execution mapping & control flow mechanics | GATE Day 1 Linear Algebra: Matrices & Determinants",iv:false,at:null},
+  "2026-11-02":{f:"Nov 02",p:1,ph:"Phase 1 · Logic Formulation",task:"Variable lifecycle & memory state tracing | GATE Day 2 Linear Equations & Rank",iv:false,at:null},
+  "2026-11-03":{f:"Nov 03",p:1,ph:"Phase 1 · Logic Formulation",task:"GATE TEST — 2-Hour GATE Mathematics Assessment: Linear Algebra",iv:false,at:"gate"},
+  "2026-11-04":{f:"Nov 04",p:1,ph:"Phase 1 · Logic Formulation",task:"Branching logic trees & edge case evaluation | GATE Advanced Math Problem Solving",iv:false,at:null},
+  "2026-11-05":{f:"Nov 05",p:1,ph:"Phase 1 · Logic Formulation",task:"Conditional pseudocode execution tracing | GATE Advanced Math Problem Solving",iv:false,at:null},
+  "2026-11-06":{f:"Nov 06",p:1,ph:"Phase 1 · Logic Formulation",task:"MATH ASSESSMENT — 2-Hour Quantitative Problem Solving Test",iv:false,at:"math"},
+  "2026-11-07":{f:"Nov 07",p:1,ph:"Phase 1 · Logic Formulation",task:"LOGIC EVALUATION — 2-Hour Paper Test: Manual Code Tracing & Logic Evaluation",iv:false,at:"logic"},
+  "2026-11-08":{f:"Nov 08",p:1,ph:"Phase 1 · Logic Formulation",task:"Loop invariants & iteration mapping | GATE Day 1 Calculus: Limits & Continuity",iv:false,at:null},
+  "2026-11-09":{f:"Nov 09",p:1,ph:"Phase 1 · Logic Formulation",task:"Paper dry-running for loop state tables | GATE Day 2 Calculus: Maxima & Minima",iv:false,at:null},
+  "2026-11-10":{f:"Nov 10",p:1,ph:"Phase 1 · Logic Formulation",task:"GATE TEST — 2-Hour GATE Calculus Practice Test & PYQs",iv:false,at:"gate"},
+  "2026-11-11":{f:"Nov 11",p:1,ph:"Phase 1 · Logic Formulation",task:"Triangular coordinate patterns & space-index math | GATE Practice Calculus",iv:false,at:null},
+  "2026-11-12":{f:"Nov 12",p:1,ph:"Phase 1 · Logic Formulation",task:"Symmetric pyramid patterns & nested loop math | GATE Practice Calculus",iv:false,at:null},
+  "2026-11-13":{f:"Nov 13",p:1,ph:"Phase 1 · Logic Formulation",task:"CALCULUS TEST — 2-Hour Calculus Subject Revision & Problem Solving",iv:false,at:"math"},
+  "2026-11-14":{f:"Nov 14",p:1,ph:"Phase 1 · Logic Formulation",task:"LOGIC EVALUATION — 2-Hour Written Assessment: Unseen Pattern Pseudocode",iv:false,at:"logic"},
+  "2026-11-15":{f:"Nov 15",p:1,ph:"Phase 1 · Logic Formulation",task:"Numeric matrix pattern logic & sequence rules | GATE Day 1 Discrete Math: Sets",iv:false,at:null},
+  "2026-11-16":{f:"Nov 16",p:1,ph:"Phase 1 · Logic Formulation",task:"Multi-nested loop stack trace & index tracking | GATE Day 2 Propositional Logic",iv:false,at:null},
+  "2026-11-17":{f:"Nov 17",p:1,ph:"Phase 1 · Logic Formulation",task:"GATE TEST — 2-Hour GATE Discrete Mathematics Test",iv:false,at:"gate"},
+  "2026-11-18":{f:"Nov 18",p:1,ph:"Phase 1 · Logic Formulation",task:"Function scope, parameters & stack frame design | GATE Discrete Math Revision",iv:false,at:null},
+  "2026-11-19":{f:"Nov 19",p:1,ph:"Phase 1 · Logic Formulation",task:"Recursive base case tracing & stack unwinding | GATE Discrete Math Revision",iv:false,at:null},
+  "2026-11-20":{f:"Nov 20",p:1,ph:"Phase 1 · Logic Formulation",task:"LOGIC TEST — 2-Hour Advanced Problem Solving Assessment",iv:false,at:"logic"},
+  "2026-11-21":{f:"Nov 21",p:1,ph:"Phase 1 · Logic Formulation",task:"LOGIC EVALUATION — 2-Hour Recursion Tree & Call Stack Paper Test",iv:false,at:"logic"},
+  "2026-11-22":{f:"Nov 22",p:1,ph:"Phase 1 · Logic Formulation",task:"1D Array memory layout & index offset calculations | GATE Combinatorics",iv:false,at:null},
+  "2026-11-23":{f:"Nov 23",p:1,ph:"Phase 1 · Logic Formulation",task:"Array traversal, reversal & linear search dry-runs | GATE Probability: Bayes Theorem",iv:false,at:null},
+  "2026-11-24":{f:"Nov 24",p:1,ph:"Phase 1 · Logic Formulation",task:"GATE TEST — 2-Hour GATE Probability & Combinatorics Test",iv:false,at:"gate"},
+  "2026-11-25":{f:"Nov 25",p:1,ph:"Phase 1 · Logic Formulation",task:"Bubble & Selection sort pass-by-pass tracing | GATE Statistics Revision",iv:false,at:null},
+  "2026-11-26":{f:"Nov 26",p:1,ph:"Phase 1 · Logic Formulation",task:"ASCII string traversal & character manipulation logic | GATE Statistics Revision",iv:false,at:null},
+  "2026-11-27":{f:"Nov 27",p:1,ph:"Phase 1 · Logic Formulation",task:"REVISION TEST — 2-Hour Quantitative Aptitude Revision Test",iv:false,at:"math"},
+  "2026-11-28":{f:"Nov 28",p:1,ph:"Phase 1 · Logic Formulation",task:"LOGIC EVALUATION — 2-Hour Array & Sorting Logic Written Test",iv:false,at:"logic"},
+  "2026-11-29":{f:"Nov 29",p:1,ph:"Phase 1 · Logic Formulation",task:"Control flow & pattern consolidation sprint | GATE Mathematics PYQ Sprint",iv:false,at:null},
+  "2026-11-30":{f:"Nov 30",p:1,ph:"Phase 1 · Logic Formulation",task:"MONTHLY FULL MOCK — 3-Hour Comprehensive Evaluation: Logic + GATE Mathematics",iv:false,at:"mock"},
+  "2026-12-01":{f:"Dec 01",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"2D Matrix traversal & row-major address math | GATE Multivariable Calculus & Partial Derivatives",iv:false,at:null},
+  "2026-12-02":{f:"Dec 02",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Matrix transpose & multiplication step tracing | GATE Gradient Vectors & Jacobians",iv:false,at:null},
+  "2026-12-03":{f:"Dec 03",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"GATE TEST — 2-Hour GATE Advanced Calculus Test",iv:false,at:"gate"},
+  "2026-12-04":{f:"Dec 04",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Binary search boundaries & mid-point calculation | GATE Advanced Engineering Math",iv:false,at:null},
+  "2026-12-05":{f:"Dec 05",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Binary search decision tree trace | GATE Advanced Engineering Math",iv:false,at:null},
+  "2026-12-06":{f:"Dec 06",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"MATH TEST — 2-Hour Advanced Mathematics Assessment",iv:false,at:"math"},
+  "2026-12-07":{f:"Dec 07",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"LOGIC EVALUATION — 2-Hour Matrix & Searching Logic Written Test",iv:false,at:"logic"},
+  "2026-12-08":{f:"Dec 08",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Pointer indirection & address arithmetic | GATE Random Variables & Expectations",iv:false,at:null},
+  "2026-12-09":{f:"Dec 09",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Pointer-to-array memory layout tracing | GATE Probability Distributions",iv:false,at:null},
+  "2026-12-10":{f:"Dec 10",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"GATE TEST — 2-Hour GATE Probability Distributions Test",iv:false,at:"gate"},
+  "2026-12-11":{f:"Dec 11",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Struct memory alignment & data padding rules | GATE Statistics Review",iv:false,at:null},
+  "2026-12-12":{f:"Dec 12",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Object-oriented state models & class encapsulation | GATE Statistics Review",iv:false,at:null},
+  "2026-12-13":{f:"Dec 13",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"STATISTICS TEST — 2-Hour Statistics Theory Revision",iv:false,at:"math"},
+  "2026-12-14":{f:"Dec 14",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"LOGIC EVALUATION — 2-Hour Pointer & Struct Logic Assessment",iv:false,at:"logic"},
+  "2026-12-15":{f:"Dec 15",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Logic Review & Peak Physique Session | GATE Pre-IV Digital Logic: Combinational Circuits",iv:false,at:null},
+  "2026-12-16":{f:"Dec 16",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Logic Review & Peak Physique Session | GATE Pre-IV Digital Logic: Sequential Circuits",iv:false,at:null},
+  "2026-12-17":{f:"Dec 17",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Travel Preparation & Physique Benchmark Verification",iv:false,at:null},
+  "2026-12-18":{f:"Dec 18",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Work Shift Handover & Packing Checkpoint",iv:false,at:null},
+  "2026-12-19":{f:"Dec 19",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
+  "2026-12-20":{f:"Dec 20",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
+  "2026-12-21":{f:"Dec 21",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
+  "2026-12-22":{f:"Dec 22",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
+  "2026-12-23":{f:"Dec 23",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
+  "2026-12-24":{f:"Dec 24",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
+  "2026-12-25":{f:"Dec 25",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
+  "2026-12-26":{f:"Dec 26",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
+  "2026-12-27":{f:"Dec 27",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
+  "2026-12-28":{f:"Dec 28",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
+  "2026-12-29":{f:"Dec 29",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
+  "2026-12-30":{f:"Dec 30",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Post-IV Repository & Logic Note Review — Re-entry Protocol",iv:false,at:null},
+  "2026-12-31":{f:"Dec 31",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Sem 6 High-SGPA Sprint Environment Setup — Academics Launch Tomorrow",iv:false,at:null},
+  "2027-01-01":{f:"Jan 01",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Sem 6 Syllabus Mapping & Weightage Breakdown | Academic Day 1 Core Theory Deep Dive",iv:false,at:null},
+  "2027-01-02":{f:"Jan 02",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"OS: Process Control Blocks & States | Academic Day 2 Core Theory Deep Dive",iv:false,at:null},
+  "2027-01-03":{f:"Jan 03",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"ACADEMICS TEST — 2-Hour Sem 6 Theory Assessment",iv:false,at:"academic"},
+  "2027-01-04":{f:"Jan 04",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"LOGIC EVALUATION — 2-Hour OS CPU Scheduling Algorithm Paper Tracing",iv:false,at:"logic"},
+  "2027-01-05":{f:"Jan 05",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Semaphore & Mutex synchronization pseudocode | GATE OS: CPU Scheduling Algorithms",iv:false,at:null},
+  "2027-01-06":{f:"Jan 06",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Banker's Algorithm safety matrix calculation | GATE OS: Deadlocks & Synchronization",iv:false,at:null},
+  "2027-01-07":{f:"Jan 07",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"GATE TEST — 2-Hour GATE Operating Systems Mock Assessment",iv:false,at:"gate"},
+  "2027-01-08":{f:"Jan 08",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"DBMS: B-Tree index structure & node splitting | Academic Day 1 Sem 6 In-Depth Review",iv:false,at:null},
+  "2027-01-09":{f:"Jan 09",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Relational Algebra expression tree optimization | Academic Day 2 Sem 6 In-Depth Review",iv:false,at:null},
+  "2027-01-10":{f:"Jan 10",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"ACADEMICS TEST — 2-Hour Sem 6 Academic Exam Simulation",iv:false,at:"academic"},
+  "2027-01-11":{f:"Jan 11",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"LOGIC EVALUATION — 2-Hour Database Query Optimization & Relational Algebra Test",iv:false,at:"logic"},
+  "2027-01-12":{f:"Jan 12",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"DSA: BST insertion & deletion rotation tracing | GATE DSA: Trees & Binary Search Trees",iv:false,at:null},
+  "2027-01-13":{f:"Jan 13",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Graph representation & Dijkstra shortest path dry run | GATE DSA: Graph Algorithms",iv:false,at:null},
+  "2027-01-14":{f:"Jan 14",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"GATE TEST — 2-Hour GATE Data Structures & Algorithms Test",iv:false,at:"gate"},
+  "2027-01-15":{f:"Jan 15",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Computer Networks: OSI stack encapsulation flow | Academic Day 1 Mid-Semester Revision",iv:false,at:null},
+  "2027-01-16":{f:"Jan 16",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Subnet mask calculation & IP routing table lookup | Academic Day 2 Mid-Semester Revision",iv:false,at:null},
+  "2027-01-17":{f:"Jan 17",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"ACADEMICS TEST — 2-Hour SGPA Theory Written Test",iv:false,at:"academic"},
+  "2027-01-18":{f:"Jan 18",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"LOGIC EVALUATION — 2-Hour Network Routing & Subnetting Logic Test",iv:false,at:"logic"},
+  "2027-01-19":{f:"Jan 19",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"AI: State space graph heuristics | GATE Computer Networks: Protocol Headers",iv:false,at:null},
+  "2027-01-20":{f:"Jan 20",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"A* Search & Minimax game tree evaluation | GATE Networks: Flow & Error Control",iv:false,at:null},
+  "2027-01-21":{f:"Jan 21",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"GATE TEST — 2-Hour GATE Computer Networks Assessment",iv:false,at:"gate"},
+  "2027-01-22":{f:"Jan 22",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"ML: Gradient descent step updates | Academic Day 1 Sem 6 Advanced Subject Practice",iv:false,at:null},
+  "2027-01-23":{f:"Jan 23",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Decision Tree entropy & information gain math | Academic Day 2 Advanced Practice",iv:false,at:null},
+  "2027-01-24":{f:"Jan 24",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"ACADEMICS TEST — 2-Hour Academic Theory Evaluation Test",iv:false,at:"academic"},
+  "2027-01-25":{f:"Jan 25",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"LOGIC EVALUATION — 2-Hour AI/ML Mathematical Step Analysis Test",iv:false,at:"logic"},
+  "2027-01-26":{f:"Jan 26",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Sem 6 Theoretical Derivations & Formula Proofs | GATE DBMS: Normalization (1NF to BCNF)",iv:false,at:null},
+  "2027-01-27":{f:"Jan 27",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Sem 6 High-Weightage Problem Solving | GATE DBMS: ACID Properties & Serializability",iv:false,at:null},
+  "2027-01-28":{f:"Jan 28",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"GATE TEST — 2-Hour GATE DBMS Assessment",iv:false,at:"gate"},
+  "2027-01-29":{f:"Jan 29",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Sem 6 Consolidated Question Bank Review | Academic Day 1 Final SGPA Mock Preparation",iv:false,at:null},
+  "2027-01-30":{f:"Jan 30",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Sem 6 Previous Year Question Paper Analysis | Academic Day 2 Final SGPA Mock",iv:false,at:null},
+  "2027-01-31":{f:"Jan 31",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"ACADEMICS TEST — 2-Hour Final Sem 6 SGPA Semester Mock Assessment",iv:false,at:"academic"},
+  "2027-02-01":{f:"Feb 01",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"MILESTONE EVALUATION — 3-Hour Comprehensive Evaluation: Sem 6 Academics + GATE",iv:false,at:"mock"}
+};
+
+/* ── DESIGN TOKENS ────────────────────────────────────────── */
+const PHASE_ACCENT = {
+  1: { color:'#2B56F5', bg:'rgba(43,86,245,.1)',  bar:'#2B56F5', label:'P1' },
+  2: { color:'#1DB87A', bg:'rgba(29,184,122,.1)', bar:'#1DB87A', label:'P2' },
+  3: { color:'#7C4DFF', bg:'rgba(124,77,255,.1)', bar:'#7C4DFF', label:'P3' },
+};
+const ASSESS_MAP = {
+  gate:     { color:'#2B56F5', bg:'rgba(43,86,245,.1)',  label:'GATE TEST' },
+  math:     { color:'#F5A623', bg:'rgba(245,166,35,.1)', label:'MATH TEST' },
+  logic:    { color:'#7C4DFF', bg:'rgba(124,77,255,.1)', label:'LOGIC EVAL' },
+  academic: { color:'#1DB87A', bg:'rgba(29,184,122,.1)', label:'ACADEMIC TEST' },
+  mock:     { color:'#F53B57', bg:'rgba(245,59,87,.1)',  label:'FULL MOCK' },
+};
+const WEEKDAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const WEEKDAYS_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+/* ── STATE ────────────────────────────────────────────────── */
+const LS_KEY = 'execution_tracker_data';
+let S = {};
+try { S = JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch(e) {}
+if (!S.theme)  S.theme  = 'dark';
+if (!S.checks) S.checks = {};
+
+let saveTid = null;
+let cur = clamp(new Date().toISOString().split('T')[0]);
+
+/* ── HELPERS ──────────────────────────────────────────────── */
+function clamp(d){ return d < '2026-11-01' ? '2026-11-01' : d > '2027-02-01' ? '2027-02-01' : d; }
+function bCount(d){ return d >= '2027-01-01' ? 4 : 3; }
+function dayIndex(d){ const o=new Date(d+'T00:00:00'); return Math.round((o-new Date('2026-11-01T00:00:00'))/(864e5)); }
+function totalDays(){ return Object.keys(T).length; }
+
+/* ── THEME ────────────────────────────────────────────────── */
+function applyTheme(){
+  const dark = S.theme === 'dark';
+  const root = document.documentElement;
+  const body = document.getElementById('body-root');
+
+  root.classList.toggle('dark', dark);
+
+  /* Canvas */
+  body.style.backgroundColor = dark ? '#0C0D12' : '#F4F5F8';
+  body.style.color            = dark ? '#FFFFFF'  : '#111214';
+
+  /* Card / lift backgrounds — cascade update */
+  document.querySelectorAll('.dm-card, .lm-card').forEach(el => {
+    el.style.backgroundColor = dark ? '#17181F' : '#FFFFFF';
+  });
+  document.querySelectorAll('.dm-lift, .lm-lift').forEach(el => {
+    el.style.backgroundColor = dark ? '#1E202A' : '#F0F1F5';
+  });
+  document.querySelectorAll('.dm-rim, .lm-rim').forEach(el => {
+    el.style.backgroundColor = dark ? '#2A2C38' : '#E3E5EC';
+  });
+
+  /* Separator lines */
+  document.querySelectorAll('.sep').forEach(el => {
+    el.style.background = dark ? '#2A2C38' : '#E3E5EC';
+  });
+
+  /* Stat grid gaps */
+  const sg = document.getElementById('stat-grid');
+  if(sg) sg.style.background = dark ? '#2A2C38' : '#E3E5EC';
+
+  /* Nav buttons */
+  ['prev-btn','next-btn'].forEach(id=>{
+    const b=document.getElementById(id);
+    if(b){ b.style.background=dark?'#1E202A':'#F0F1F5'; b.style.color=dark?'#8E939D':'#686D76'; }
+  });
+
+  /* Theme button */
+  const tb=document.getElementById('theme-btn');
+  if(tb){
+    tb.style.background=dark?'#17181F':'#FFFFFF';
+    tb.style.color=dark?'#8E939D':'#686D76';
+    document.getElementById('theme-lbl').textContent=dark?'Dark':'Light';
+  }
+
+  /* Date picker */
+  const dp=document.getElementById('date-picker');
+  if(dp){ dp.style.background=dark?'#1E202A':'#F0F1F5'; dp.style.color=dark?'#FFFFFF':'#111214'; }
+
+  /* Ring track */
+  document.querySelectorAll('.ring-track').forEach(c=>{
+    c.style.stroke=dark?'#2A2C38':'#E3E5EC';
+  });
+
+  /* Task block re-color */
+  const tb2=document.getElementById('task-block');
+  if(tb2) tb2.style.backgroundColor=dark?'#17181F':'#FFFFFF';
+}
+
+function toggleTheme(){
+  S.theme = S.theme==='dark'?'light':'dark';
+  applyTheme();
+  commitState();
+}
+
+/* ── PERSIST ──────────────────────────────────────────────── */
+function commitState(){
+  localStorage.setItem(LS_KEY, JSON.stringify(S));
+  const dot = document.getElementById('save-dot');
+  dot.style.opacity='1';
+  clearTimeout(saveTid);
+  saveTid = setTimeout(()=>{ dot.style.opacity='0'; }, 2000);
+}
+
+function resetData(){
+  if(!confirm('Clear all tracked progress? This cannot be undone.')) return;
+  S.checks = {};
+  commitState();
+  render();
+}
+
+/* ── NAV ──────────────────────────────────────────────────── */
+function onDatePicked(v){
+  cur=clamp(v);
+  document.getElementById('date-picker').value=cur;
+  render();
+}
+function changeDay(off){
+  const d=new Date(cur+'T00:00:00');
+  d.setDate(d.getDate()+off);
+  const n=d.toISOString().split('T')[0];
+  if(n>='2026-11-01'&&n<='2027-02-01'){ cur=n; document.getElementById('date-picker').value=cur; render(); }
+}
+function goToToday(){
+  cur=clamp(new Date().toISOString().split('T')[0]);
+  document.getElementById('date-picker').value=cur;
+  render();
+}
+
+/* ── CHECKBOX TOGGLE ──────────────────────────────────────── */
+function toggleCheck(k){
+  if(!S.checks[cur]) S.checks[cur]={};
+  S.checks[cur][k] = !S.checks[cur][k];
+  commitState();
+  renderChecks();
+  renderStats();
+  renderHeroTask();
+}
+
+/* ── BOX DEFINITIONS ──────────────────────────────────────── */
+const BASE_BOXES = [
+  {id:'c1', label:'Coding / Logic',   sub:'Mind-Dependent Logic & Pseudocode'},
+  {id:'c2', label:'GATE Prep',        sub:'Math · PYQs · Subject Tests'},
+  {id:'c3', label:'Physique Sprint',  sub:'Peak Fitness & Body Composition'},
+];
+const SEM_BOX = {id:'c4', label:'Sem 6 Academics', sub:'8.5+ SGPA Focus'};
+
+/* ── RENDER HERO ──────────────────────────────────────────── */
+function renderHero(){
+  const info = T[cur];
+  if(!info) return;
+  const do_ = new Date(cur+'T00:00:00');
+  const wdFull = WEEKDAYS_FULL[do_.getDay()];
+  const wdShort = WEEKDAYS[do_.getDay()];
+  const acc = PHASE_ACCENT[info.p] || PHASE_ACCENT[1];
+
+  document.getElementById('hero-phase-label').textContent = info.ph;
+  document.getElementById('hero-phase-label').style.color = acc.color;
+  document.getElementById('hero-date-display').innerHTML = info.f + '&thinsp;<span id="hero-weekday" style="font-weight:300;color:#8E939D">' + wdFull + '</span>';
+  renderHeroTask();
+}
+
+function renderHeroTask(){
+  const info=T[cur]; if(!info) return;
+  const checks=S.checks[cur]||{};
+  const total=bCount(cur);
+  let done=0; for(let i=1;i<=total;i++) if(checks['c'+i]) done++;
+  const pct=Math.round((done/total)*100);
+  const sub = pct===100
+    ? 'All tasks complete for this day.'
+    : info.task.split('|')[0].trim();
+  document.getElementById('hero-task-preview').textContent = sub;
+}
+
+/* ── RENDER BADGES ────────────────────────────────────────── */
+function renderBadges(){
+  const info = T[cur]; if(!info) return;
+  const acc = PHASE_ACCENT[info.p]||PHASE_ACCENT[1];
+  const ab  = info.at ? ASSESS_MAP[info.at] : null;
+  const dark = S.theme==='dark';
+  const cs   = dark ? '#17181F' : '#FFFFFF';
+
+  let pills = '';
+
+  /* Phase pill */
+  pills += pill(info.ph, acc.color, acc.bg);
+
+  /* Assessment pill */
+  if(ab) pills += pill(ab.label, ab.color, ab.bg);
+
+  /* Industrial Visit pill */
+  if(info.iv) pills += pill('INDUSTRIAL VISIT', '#F5A623', 'rgba(245,166,35,.1)');
+
+  /* Day index pill */
+  const di = dayIndex(cur)+1;
+  pills += pill('Day ' + di + ' of 93', '#8E939D', dark?'rgba(142,147,157,.08)':'rgba(102,109,118,.08)');
+
+  document.getElementById('badge-track').innerHTML = pills;
+}
+
+function pill(text, color, bg){
+  return `<span class="sq-pill touch pressable tr" style="display:inline-flex;align-items:center;padding:0 14px;height:36px;background:${bg};color:${color};font-size:.6rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;white-space:nowrap;cursor:default">${text}</span>`;
+}
+
+/* ── RENDER TASK BLOCK ────────────────────────────────────── */
+function renderTaskBlock(){
+  const info=T[cur]; if(!info) return;
+  const dark=S.theme==='dark';
+  const liftBg=dark?'#1E202A':'#F0F1F5';
+
+  /* Split task on | for dual-line display */
+  const parts = info.task.split('|').map(s=>s.trim());
+  const isIV  = info.iv;
+
+  const ivBg = dark ? 'rgba(245,166,35,.05)' : 'rgba(245,166,35,.06)';
+
+  let html = `<div style="padding:20px 22px">`;
+
+  /* Label row */
+  html += `<p class="t-label" style="color:#8E939D;margin-bottom:10px">${isIV ? 'INDUSTRIAL VISIT PROTOCOL' : 'SCHEDULED FOCUS'}</p>`;
+
+  /* Task lines */
+  parts.forEach((pt, i) => {
+    const isFirst = i===0;
+    html += `<div style="background:${isIV ? ivBg : liftBg};border-radius:14px;padding:13px 15px;${i>0?'margin-top:8px':''}">
+      <p style="font-size:.82rem;font-weight:${isFirst?700:600};line-height:1.5;color:${isIV?'#F5A623':'inherit'}">${pt}</p>
+    </div>`;
+  });
+
+  html += `</div>`;
+  document.getElementById('task-block').innerHTML = html;
+  document.getElementById('task-block').style.backgroundColor = dark?'#17181F':'#FFFFFF';
+}
+
+/* ── RENDER CHECKBOXES ────────────────────────────────────── */
+function renderChecks(){
+  const info=T[cur]; if(!info) return;
+  const dark=S.theme==='dark';
+  const checks=S.checks[cur]||{};
+  const isJan=cur>='2027-01-01';
+  const boxes=[...BASE_BOXES]; if(isJan) boxes.push(SEM_BOX);
+  const total=boxes.length;
+  const acc=PHASE_ACCENT[info.p]||PHASE_ACCENT[1];
+  const isIV=info.iv;
+
+  document.getElementById('check-count-label').textContent = total + ' TASK' + (total>1?'S':'');
+
+  let html='';
+  boxes.forEach(b=>{
+    const checked=!!checks[b.id];
+    const liftBg=dark?'#1E202A':'#F0F1F5';
+    const activeBg=acc.bg;
+    const bg=checked ? activeBg : liftBg;
+    const textColor=checked?acc.color:'inherit';
+    const strikeStyle=checked?'text-decoration:line-through;opacity:.45':'';
+    const tickBorderColor=checked?acc.color:(dark?'#2A2C38':'#CBD5E1');
+    const tickBg=checked?acc.color:'transparent';
+
+    html += `
+      <label onclick="${isIV?'':('toggleCheck(\''+b.id+'\')')}" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;background:${bg};cursor:${isIV?'not-allowed':'pointer'};transition:all .2s cubic-bezier(.4,0,.2,1);${isIV?'opacity:.4':''}">
+        <!-- Checkbox visual -->
+        <div style="width:22px;height:22px;border-radius:7px;border:2px solid ${tickBorderColor};background:${tickBg};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s">
+          ${checked?`<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1.5 4.5L4 7.5L9.5 1" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`:''}
+        </div>
+        <!-- Text -->
+        <div style="flex:1;min-width:0">
+          <p style="font-size:.8125rem;font-weight:700;${strikeStyle};color:${textColor};margin:0">${b.label}</p>
+          <p style="font-size:.6875rem;font-weight:500;color:#8E939D;margin:2px 0 0">${b.sub}</p>
+        </div>
+        <!-- Status dot -->
+        <div style="width:7px;height:7px;border-radius:50%;background:${checked?acc.color:(dark?'#2A2C38':'#E3E5EC')};flex-shrink:0;transition:background .2s"></div>
+      </label>`;
+  });
+
+  if(isIV){
+    html += `<p style="text-align:center;font-size:.7rem;font-weight:600;color:#F5A623;padding:8px 0 2px;letter-spacing:.04em">Checkboxes suspended during Industrial Visit</p>`;
+  }
+
+  document.getElementById('check-grid').innerHTML = html;
+}
+
+/* ── RENDER STATS ─────────────────────────────────────────── */
+function renderStats(){
+  const info=T[cur]||{p:1};
+  const total=bCount(cur);
+  const checks=S.checks[cur]||{};
+  let done=0; for(let i=1;i<=total;i++) if(checks['c'+i]) done++;
+  const pct=Math.round((done/total)*100);
+  const acc=PHASE_ACCENT[info.p]||PHASE_ACCENT[1];
+
+  /* Daily ring */
+  const circ=2*Math.PI*19; /* r=19 */
+  const ring=document.getElementById('stat-ring');
+  if(ring){ ring.style.strokeDashoffset=circ*(1-pct/100); ring.setAttribute('stroke',acc.color); }
+  const dp=document.getElementById('stat-daily-pct'); if(dp) dp.textContent=pct+'%';
+  const df=document.getElementById('stat-daily-frac'); if(df) df.textContent=done+' of '+total;
+
+  /* Overall */
+  let tp=0,tc=0;
+  Object.keys(T).forEach(d=>{ const n=bCount(d); tp+=n; const dc=S.checks[d]||{}; for(let i=1;i<=n;i++) if(dc['c'+i]) tc++; });
+  const op=tp>0?Math.round((tc/tp)*100):0;
+  const sp=document.getElementById('stat-overall-pct'); if(sp) sp.textContent=op+'%';
+  const pb=document.getElementById('stat-overall-bar'); if(pb){ pb.style.width=op+'%'; pb.style.background=acc.color; }
+  const ss=document.getElementById('stat-overall-sub'); if(ss) ss.textContent=tc+' of '+tp+' tasks done';
+}
+
+/* ── RENDER STAT CARD BACKGROUNDS ─────────────────────────── */
+function renderStatBg(){
+  const dark=S.theme==='dark';
+  const cardBg=dark?'#17181F':'#FFFFFF';
+  document.querySelectorAll('#stat-grid > div').forEach(el=>{
+    el.style.backgroundColor=cardBg;
+  });
+}
+
+/* ── FULL RENDER ──────────────────────────────────────────── */
+function render(){
+  renderHero();
+  renderBadges();
+  renderTaskBlock();
+  renderChecks();
+  renderStats();
+  renderStatBg();
+  applyTheme();
+}
+
+/* ── BOOT ─────────────────────────────────────────────────── */
+document.getElementById('date-picker').value = cur;
+applyTheme();
+render();
+</script>
+</body>
+</html>
