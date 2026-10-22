@@ -651,100 +651,211 @@
         </div>
       </section>
 
-      <!-- DATE NAV -->
-      <section class="card sq p-3 fu fu2 mb-4">
-        <div class="flex items-center gap-2">
-          <button onclick="changeDay(-1)" id="prev-btn"
-            class="touch sq-sm pressable tr flex-shrink-0 px-4 font-bold text-xs tracking-wide lift"
-            style="color:#8E939D;min-width:72px;border-radius:16px">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:4px">
-              <path d="M9 11.5L4.5 7L9 2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round" />
-            </svg>Prev
+      <!-- VIEW NAVIGATION (Capsule Segment Switcher) -->
+      <div class="flex items-center justify-between mb-4 fu fu1">
+        <div class="lift sq-pill p-1 flex gap-1 w-full sm:w-auto" style="min-width:280px;border-radius:999px">
+          <button id="main-tab-daily" onclick="switchMainView('daily')"
+            class="flex-1 touch sq-pill pressable tr text-xs font-bold tracking-wide"
+            style="background:#2B56F5;color:#FFF;min-height:38px;border-radius:999px">
+            📅 Daily Blueprint
           </button>
-          <div class="flex-1 flex items-center justify-center gap-2">
-            <input type="date" id="date-picker" min="2026-11-01" max="2027-02-01" onchange="onDatePicked(this.value)"
-              class="touch sq-sm text-xs font-bold text-center tr flex-1 max-w-[180px] px-3 lift"
-              style="border:none;outline:none;color:inherit;border-radius:16px" />
-            <button onclick="goToToday()"
-              class="touch sq-sm pressable tr px-4 text-xs font-black tracking-widest flex-shrink-0"
-              style="background:#2B56F5;color:#FFF;border-radius:16px;min-width:64px">
-              TODAY
+          <button id="main-tab-history" onclick="switchMainView('history')"
+            class="flex-1 touch sq-pill pressable tr text-xs font-bold tracking-wide"
+            style="background:transparent;color:#8E939D;min-height:38px;border-radius:999px">
+            📊 History & Graph
+          </button>
+        </div>
+        <button id="corner-graph-btn" onclick="switchMainView(activeMainView === 'daily' ? 'history' : 'daily')"
+          class="lift sq-pill px-4 text-xs font-bold hidden sm:flex items-center gap-2 pressable tr"
+          style="min-height:38px;color:#8E939D;border-radius:999px">
+          <span id="corner-graph-icon">📊</span>
+          <span id="corner-graph-text">View Graph</span>
+        </button>
+      </div>
+
+      <!-- ════════════════════════════════════════════════════
+           DAILY BLUEPRINT VIEW
+      ════════════════════════════════════════════════════ -->
+      <div id="view-daily">
+        <!-- DATE NAV -->
+        <section class="card sq p-3 fu fu2 mb-4">
+          <div class="flex items-center gap-2">
+            <button onclick="changeDay(-1)" id="prev-btn"
+              class="touch sq-sm pressable tr flex-shrink-0 px-4 font-bold text-xs tracking-wide lift"
+              style="color:#8E939D;min-width:72px;border-radius:16px">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:4px">
+                <path d="M9 11.5L4.5 7L9 2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>Prev
+            </button>
+            <div class="flex-1 flex items-center justify-center gap-2">
+              <input type="date" id="date-picker" min="2026-11-01" max="2027-02-01" onchange="onDatePicked(this.value)"
+                class="touch sq-sm text-xs font-bold text-center tr flex-1 max-w-[180px] px-3 lift"
+                style="border:none;outline:none;color:inherit;border-radius:16px" />
+              <button onclick="goToToday()"
+                class="touch sq-sm pressable tr px-4 text-xs font-black tracking-widest flex-shrink-0"
+                style="background:#2B56F5;color:#FFF;border-radius:16px;min-width:64px">
+                TODAY
+              </button>
+            </div>
+            <button onclick="changeDay(1)" id="next-btn"
+              class="touch sq-sm pressable tr flex-shrink-0 px-4 font-bold text-xs tracking-wide lift"
+              style="color:#8E939D;min-width:72px;border-radius:16px">
+              Next
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-left:4px">
+                <path d="M5 2.5L9.5 7L5 11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
             </button>
           </div>
-          <button onclick="changeDay(1)" id="next-btn"
-            class="touch sq-sm pressable tr flex-shrink-0 px-4 font-bold text-xs tracking-wide lift"
-            style="color:#8E939D;min-width:72px;border-radius:16px">
-            Next
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-left:4px">
-              <path d="M5 2.5L9.5 7L5 11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round" />
-            </svg>
-          </button>
-        </div>
-      </section>
+        </section>
 
-      <!-- BADGE PILL TRACK -->
-      <div class="pill-row mb-4 fu fu3" id="badge-track"></div>
+        <!-- BADGE PILL TRACK -->
+        <div class="pill-row mb-4 fu fu3" id="badge-track"></div>
 
-      <!-- DAILY TASK BLOCK -->
-      <section class="card sq fu fu3 mb-4 overflow-hidden" id="task-block"></section>
+        <!-- DAILY TASK BLOCK -->
+        <section class="card sq fu fu3 mb-4 overflow-hidden" id="task-block"></section>
 
-      <!-- CHECKBOXES -->
-      <section class="card sq p-5 fu fu4 mb-4" id="check-section">
-        <div class="flex items-center justify-between mb-4">
-          <p class="t-label" style="color:#8E939D">Execution Log</p>
-          <p class="t-label" id="check-count-label" style="color:#5A5F6E">3 TASKS</p>
-        </div>
-        <div id="check-grid" class="flex flex-col gap-2"></div>
-      </section>
+        <!-- CHECKBOXES -->
+        <section class="card sq p-5 fu fu4 mb-4" id="check-section">
+          <div class="flex items-center justify-between mb-4">
+            <p class="t-label" style="color:#8E939D">Execution Log</p>
+            <p class="t-label" id="check-count-label" style="color:#5A5F6E">3 TASKS</p>
+          </div>
+          <div id="check-grid" class="flex flex-col gap-2"></div>
+        </section>
 
-      <!-- TIME WINDOWS -->
-      <section class="card sq p-5 fu fu5">
-        <p class="t-label mb-4" style="color:#8E939D">Locked Daily Time Windows</p>
-        <div class="flex flex-col gap-2">
-          <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
-            <div style="width:8px;height:8px;border-radius:50%;background:#2B56F5;flex-shrink:0"></div>
-            <div class="flex-1 min-w-0">
-              <p class="t-card">06:00 – 07:15 AM</p>
-              <p class="t-sub mt-0.5" style="color:#8E939D">Mind-Dependent Logic & Pseudocode</p>
+        <!-- TIME WINDOWS -->
+        <section class="card sq p-5 fu fu5">
+          <p class="t-label mb-4" style="color:#8E939D">Locked Daily Time Windows</p>
+          <div class="flex flex-col gap-2">
+            <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
+              <div style="width:8px;height:8px;border-radius:50%;background:#2B56F5;flex-shrink:0"></div>
+              <div class="flex-1 min-w-0">
+                <p class="t-card">06:00 – 07:15 AM</p>
+                <p class="t-sub mt-0.5" style="color:#8E939D">Mind-Dependent Logic & Pseudocode</p>
+              </div>
+              <span class="t-label sq-pill px-2 py-1" style="background:rgba(43,86,245,.1);color:#2B56F5">LOGIC</span>
             </div>
-            <span class="t-label sq-pill px-2 py-1" style="background:rgba(43,86,245,.1);color:#2B56F5">LOGIC</span>
-          </div>
-          <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
-            <div style="width:8px;height:8px;border-radius:50%;background:#1DB87A;flex-shrink:0"></div>
-            <div class="flex-1 min-w-0">
-              <p class="t-card">07:15 – 08:00 AM</p>
-              <p class="t-sub mt-0.5" style="color:#8E939D">Peak Fitness / Physique Sprint</p>
+            <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
+              <div style="width:8px;height:8px;border-radius:50%;background:#1DB87A;flex-shrink:0"></div>
+              <div class="flex-1 min-w-0">
+                <p class="t-card">07:15 – 08:00 AM</p>
+                <p class="t-sub mt-0.5" style="color:#8E939D">Peak Fitness / Physique Sprint</p>
+              </div>
+              <span class="t-label sq-pill px-2 py-1" style="background:rgba(29,184,122,.1);color:#1DB87A">GYM</span>
             </div>
-            <span class="t-label sq-pill px-2 py-1" style="background:rgba(29,184,122,.1);color:#1DB87A">GYM</span>
-          </div>
-          <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
-            <div style="width:8px;height:8px;border-radius:50%;background:#F5A623;flex-shrink:0"></div>
-            <div class="flex-1 min-w-0">
-              <p class="t-card">08:30 AM – 04:30 PM</p>
-              <p class="t-sub mt-0.5" style="color:#8E939D">College Academics · Sem 6 SGPA Focus</p>
+            <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
+              <div style="width:8px;height:8px;border-radius:50%;background:#F5A623;flex-shrink:0"></div>
+              <div class="flex-1 min-w-0">
+                <p class="t-card">08:30 AM – 04:30 PM</p>
+                <p class="t-sub mt-0.5" style="color:#8E939D">College Academics · Sem 6 SGPA Focus</p>
+              </div>
+              <span class="t-label sq-pill px-2 py-1" style="background:rgba(245,166,35,.1);color:#F5A623">SEM 6</span>
             </div>
-            <span class="t-label sq-pill px-2 py-1" style="background:rgba(245,166,35,.1);color:#F5A623">SEM 6</span>
-          </div>
-          <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
-            <div style="width:8px;height:8px;border-radius:50%;background:#7C4DFF;flex-shrink:0"></div>
-            <div class="flex-1 min-w-0">
-              <p class="t-card">05:00 – 07:00 PM</p>
-              <p class="t-sub mt-0.5" style="color:#8E939D">Rotational Slot — GATE / Mock Tests</p>
+            <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
+              <div style="width:8px;height:8px;border-radius:50%;background:#7C4DFF;flex-shrink:0"></div>
+              <div class="flex-1 min-w-0">
+                <p class="t-card">05:00 – 07:00 PM</p>
+                <p class="t-sub mt-0.5" style="color:#8E939D">Rotational Slot — GATE / Mock Tests</p>
+              </div>
+              <span class="t-label sq-pill px-2 py-1" style="background:rgba(124,77,255,.1);color:#7C4DFF">GATE</span>
             </div>
-            <span class="t-label sq-pill px-2 py-1" style="background:rgba(124,77,255,.1);color:#7C4DFF">GATE</span>
-          </div>
-          <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
-            <div style="width:8px;height:8px;border-radius:50%;background:#5A5F6E;flex-shrink:0"></div>
-            <div class="flex-1 min-w-0">
-              <p class="t-card">08:00 PM – 12:00 AM</p>
-              <p class="t-sub mt-0.5" style="color:#8E939D">Part-Time Work Shift · 4 Hours Fixed</p>
+            <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
+              <div style="width:8px;height:8px;border-radius:50%;background:#5A5F6E;flex-shrink:0"></div>
+              <div class="flex-1 min-w-0">
+                <p class="t-card">08:00 PM – 12:00 AM</p>
+                <p class="t-sub mt-0.5" style="color:#8E939D">Part-Time Work Shift · 4 Hours Fixed</p>
+              </div>
+              <span class="t-label sq-pill px-2 py-1" style="background:rgba(90,95,110,.12);color:#5A5F6E">WORK</span>
             </div>
-            <span class="t-label sq-pill px-2 py-1" style="background:rgba(90,95,110,.12);color:#5A5F6E">WORK</span>
           </div>
-        </div>
-      </section>
+        </section>
+      </div><!-- /view-daily -->
+
+      <!-- ════════════════════════════════════════════════════
+           HISTORY & ANALYTICS VIEW
+      ════════════════════════════════════════════════════ -->
+      <div id="view-history" style="display:none" class="flex flex-col gap-4 fu">
+
+        <!-- OVERALL GOAL COMPLETION GRAPH CARD -->
+        <section class="card sq p-6 fu fu1 overflow-hidden" id="history-graph-card">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+            <div>
+              <p class="t-label" style="color:#2B56F5">STRATEGIC GOAL TRAJECTORY</p>
+              <h3 class="text-xl font-black tracking-tight mt-1">93-Day Goal Completion Graph</h3>
+              <p class="t-sub mt-1" style="color:#8E939D">Nov 1, 2026 → Feb 1, 2027 · Ideal Pace vs Actual Progress</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <!-- Corner badge -->
+              <div class="lift sq-sm px-4 py-2 flex flex-col items-end" style="border-radius:14px">
+                <span class="t-label" style="color:#8E939D">OVERALL STATUS</span>
+                <span class="t-data text-lg mt-0.5" id="graph-stat-pct" style="color:#2B56F5">0%</span>
+              </div>
+              <div class="lift sq-sm px-4 py-2 flex flex-col items-end" style="border-radius:14px">
+                <span class="t-label" style="color:#8E939D">CURRENT STREAK</span>
+                <span class="t-data text-lg mt-0.5" id="graph-stat-streak" style="color:#1DB87A">0 Days</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SVG Chart Container -->
+          <div class="w-full overflow-x-auto relative" style="min-height:260px">
+            <svg id="goal-completion-svg" viewBox="0 0 760 260" class="w-full h-auto select-none" style="min-width:620px"></svg>
+            <div id="graph-tooltip" class="absolute pointer-events-none lift sq-sm p-3 text-xs shadow-xl"
+              style="display:none;z-index:20;min-width:160px;border-radius:12px"></div>
+          </div>
+
+          <!-- Legend & Phase keys -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t" style="border-color:rgba(142,147,157,.12)">
+            <div class="flex items-center gap-4 text-xs font-semibold" style="color:#8E939D">
+              <span class="flex items-center gap-2">
+                <span style="width:14px;height:3px;border-radius:2px;background:#2B56F5;display:inline-block"></span>
+                Actual Progress
+              </span>
+              <span class="flex items-center gap-2">
+                <span style="width:14px;height:2px;border-top:2px dashed #8E939D;display:inline-block"></span>
+                Ideal Target Pace
+              </span>
+            </div>
+            <div class="flex items-center gap-2 text-xs">
+              <span class="sq-pill px-2.5 py-1 t-label" style="background:rgba(43,86,245,.1);color:#2B56F5">P1: Nov</span>
+              <span class="sq-pill px-2.5 py-1 t-label" style="background:rgba(29,184,122,.1);color:#1DB87A">P2: Dec</span>
+              <span class="sq-pill px-2.5 py-1 t-label" style="background:rgba(124,77,255,.1);color:#7C4DFF">P3: Jan-Feb</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- CATEGORY COMPLETION BREAKDOWN -->
+        <section class="card sq p-6 fu fu2">
+          <div class="flex items-center justify-between mb-4">
+            <p class="t-label" style="color:#8E939D">DISCIPLINE MASTERY</p>
+            <p class="t-sub" style="color:#8E939D">4 Tracks · Real-Time Completion</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3" id="category-cards">
+            <!-- Rendered by JS -->
+          </div>
+        </section>
+
+        <!-- 93-DAY HEATMAP / CALENDAR MATRIX -->
+        <section class="card sq p-6 fu fu3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <div>
+              <p class="t-label" style="color:#8E939D">93-DAY EXECUTION MATRIX</p>
+              <h4 class="text-base font-bold mt-0.5">Blueprint Timeline Heatmap</h4>
+            </div>
+            <div class="flex items-center gap-2 text-xs" style="color:#8E939D">
+              <span class="flex items-center gap-1.5"><span style="width:10px;height:10px;border-radius:3px;background:#1E202A;display:inline-block" class="lift"></span> 0%</span>
+              <span class="flex items-center gap-1.5"><span style="width:10px;height:10px;border-radius:3px;background:#F5A623;display:inline-block"></span> Partial</span>
+              <span class="flex items-center gap-1.5"><span style="width:10px;height:10px;border-radius:3px;background:#1DB87A;display:inline-block"></span> 100%</span>
+            </div>
+          </div>
+          <div id="calendar-heatmap" class="flex flex-col gap-4">
+            <!-- Rendered by JS -->
+          </div>
+        </section>
+
+      </div><!-- /view-history -->
 
     </div>
   </div><!-- /app-screen -->
@@ -899,6 +1010,9 @@
       document.querySelectorAll('.inp').forEach(el => { el.style.backgroundColor = dark ? '#1E202A' : '#F0F1F5'; el.style.color = dark ? '#FFFFFF' : '#111214'; });
       const ac = document.getElementById('auth-card'); if (ac) ac.style.backgroundColor = dark ? '#17181F' : '#FFFFFF';
       const as = document.getElementById('auth-screen'); if (as) as.style.backgroundColor = dark ? '#0C0D12' : '#F4F5F8';
+      if (typeof activeMainView !== 'undefined' && activeMainView === 'history' && typeof renderHistory === 'function') {
+        renderHistory();
+      }
     }
     function toggleTheme() {
       S.theme = S.theme === 'dark' ? 'light' : 'dark';
@@ -1048,21 +1162,113 @@
       }, 1500);
     });
 
-    /* ── NAV ──────────────────────────────────────────────────── */
-    function onDatePicked(v) { cur = clamp(v); document.getElementById('date-picker').value = cur; render(); }
-    function changeDay(off) {
-      const d = new Date(cur + 'T00:00:00'); d.setDate(d.getDate() + off);
-      const n = d.toISOString().split('T')[0];
-      if (n >= '2026-11-01' && n <= '2027-02-01') { cur = n; document.getElementById('date-picker').value = cur; render(); }
+    /* ── NAV & DATE LOGIC (Timezone-Safe ALL_DATES) ──────────── */
+    const ALL_DATES = Object.keys(T).sort();
+    let activeMainView = 'daily';
+
+    function clamp(d) {
+      if (!d || d < '2026-11-01') return '2026-11-01';
+      if (d > '2027-02-01') return '2027-02-01';
+      return d;
     }
-    function goToToday() { cur = clamp(new Date().toISOString().split('T')[0]); document.getElementById('date-picker').value = cur; render(); }
+
+    function updateNavButtons() {
+      const idx = ALL_DATES.indexOf(cur);
+      const pBtn = document.getElementById('prev-btn');
+      const nBtn = document.getElementById('next-btn');
+      if (pBtn) {
+        const dis = (idx <= 0);
+        pBtn.disabled = dis;
+        pBtn.style.opacity = dis ? '0.35' : '1';
+        pBtn.style.cursor = dis ? 'not-allowed' : 'pointer';
+      }
+      if (nBtn) {
+        const dis = (idx >= ALL_DATES.length - 1);
+        nBtn.disabled = dis;
+        nBtn.style.opacity = dis ? '0.35' : '1';
+        nBtn.style.cursor = dis ? 'not-allowed' : 'pointer';
+      }
+    }
+
+    function onDatePicked(v) {
+      cur = clamp(v);
+      const dp = document.getElementById('date-picker');
+      if (dp) dp.value = cur;
+      render();
+    }
+
+    function changeDay(off) {
+      const idx = ALL_DATES.indexOf(cur);
+      if (idx === -1) {
+        cur = '2026-11-01';
+      } else {
+        const nxt = idx + off;
+        if (nxt >= 0 && nxt < ALL_DATES.length) {
+          cur = ALL_DATES[nxt];
+        }
+      }
+      const dp = document.getElementById('date-picker');
+      if (dp) dp.value = cur;
+      render();
+    }
+
+    function goToToday() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      cur = clamp(`${y}-${m}-${d}`);
+      const dp = document.getElementById('date-picker');
+      if (dp) dp.value = cur;
+      render();
+    }
+
+    /* ── VIEW SWITCHER (Daily vs History) ─────────────────────── */
+    function switchMainView(v) {
+      activeMainView = v;
+      const isDaily = (v === 'daily');
+      const vDaily = document.getElementById('view-daily');
+      const vHist = document.getElementById('view-history');
+      if (vDaily) vDaily.style.display = isDaily ? 'block' : 'none';
+      if (vHist) vHist.style.display = isDaily ? 'none' : 'flex';
+
+      const bDaily = document.getElementById('main-tab-daily');
+      const bHist = document.getElementById('main-tab-history');
+      if (bDaily) {
+        bDaily.style.background = isDaily ? '#2B56F5' : 'transparent';
+        bDaily.style.color = isDaily ? '#FFF' : '#8E939D';
+      }
+      if (bHist) {
+        bHist.style.background = !isDaily ? '#2B56F5' : 'transparent';
+        bHist.style.color = !isDaily ? '#FFF' : '#8E939D';
+      }
+      const cornerText = document.getElementById('corner-graph-text');
+      const cornerIcon = document.getElementById('corner-graph-icon');
+      if (cornerText) cornerText.textContent = isDaily ? 'View Graph' : 'Daily View';
+      if (cornerIcon) cornerIcon.textContent = isDaily ? '📊' : '📅';
+
+      if (!isDaily) {
+        renderHistory();
+      }
+    }
+
+    function jumpFromGraph(date) {
+      cur = clamp(date);
+      const dp = document.getElementById('date-picker');
+      if (dp) dp.value = cur;
+      switchMainView('daily');
+      render();
+    }
 
     /* ── CHECKBOX TOGGLE ──────────────────────────────────────── */
     function toggleCheck(k) {
       if (!S.checks[cur]) S.checks[cur] = {};
       S.checks[cur][k] = !S.checks[cur][k];
       commitState();
-      renderChecks(); renderStats(); renderHeroTask();
+      renderChecks();
+      renderStats();
+      renderHeroTask();
+      if (activeMainView === 'history') renderHistory();
     }
 
     /* ── BOX DEFS ─────────────────────────────────────────────── */
@@ -1174,7 +1380,7 @@
       const dp = document.getElementById('stat-daily-pct'); if (dp) dp.textContent = pct + '%';
       const df = document.getElementById('stat-daily-frac'); if (df) df.textContent = done + ' of ' + total;
       let tp = 0, tc = 0;
-      Object.keys(T).forEach(d => { const n = bCount(d); tp += n; const dc = S.checks[d] || {}; for (let i = 1; i <= n; i++)if (dc['c' + i]) tc++; });
+      ALL_DATES.forEach(d => { const n = bCount(d); tp += n; const dc = S.checks[d] || {}; for (let i = 1; i <= n; i++)if (dc['c' + i]) tc++; });
       const op = tp > 0 ? Math.round((tc / tp) * 100) : 0;
       const sp = document.getElementById('stat-overall-pct'); if (sp) sp.textContent = op + '%';
       const pb = document.getElementById('stat-overall-bar'); if (pb) { pb.style.width = op + '%'; pb.style.background = acc.color; }
@@ -1185,9 +1391,325 @@
       document.querySelectorAll('#stat-grid > div').forEach(el => el.style.backgroundColor = dark ? '#17181F' : '#FFFFFF');
     }
 
+    /* ── HISTORY & GOAL COMPLETION GRAPH RENDERING ─────────────── */
+    window.__graphData = [];
+
+    function renderHistory() {
+      const dark = S.theme === 'dark';
+      let totalTasks = 0;
+      let doneTasks = 0;
+      let dailyCompletion = [];
+
+      const cats = {
+        c1: { id: 'c1', name: 'Coding / Logic', total: 0, done: 0, color: '#2B56F5', desc: 'Mind-Dependent Logic & Pseudocode' },
+        c2: { id: 'c2', name: 'GATE Prep', total: 0, done: 0, color: '#F5A623', desc: 'Math · Subject Tests · PYQs' },
+        c3: { id: 'c3', name: 'Physique Sprint', total: 0, done: 0, color: '#1DB87A', desc: 'Peak Fitness & Body Composition' },
+        c4: { id: 'c4', name: 'Sem 6 Academics', total: 0, done: 0, color: '#7C4DFF', desc: '8.5+ SGPA High-Performance Target' },
+      };
+
+      ALL_DATES.forEach((d, idx) => {
+        const isJan = (d >= '2027-01-01');
+        const dayTotal = isJan ? 4 : 3;
+        totalTasks += dayTotal;
+
+        cats.c1.total++;
+        cats.c2.total++;
+        cats.c3.total++;
+        if (isJan) cats.c4.total++;
+
+        const dayChecks = S.checks[d] || {};
+        let dayDone = 0;
+        if (dayChecks.c1) { dayDone++; cats.c1.done++; }
+        if (dayChecks.c2) { dayDone++; cats.c2.done++; }
+        if (dayChecks.c3) { dayDone++; cats.c3.done++; }
+        if (isJan && dayChecks.c4) { dayDone++; cats.c4.done++; }
+
+        doneTasks += dayDone;
+        const dayPct = Math.round((dayDone / dayTotal) * 100);
+        const cumPct = Math.round((doneTasks / 311) * 100);
+
+        dailyCompletion.push({
+          date: d,
+          info: T[d],
+          done: dayDone,
+          total: dayTotal,
+          pct: dayPct,
+          cumDone: doneTasks,
+          cumPct: cumPct,
+          idx: idx
+        });
+      });
+
+      window.__graphData = dailyCompletion;
+
+      // Current Streak Calculation
+      const curIdx = ALL_DATES.indexOf(cur);
+      let streak = 0;
+      for (let i = (curIdx >= 0 ? curIdx : ALL_DATES.length - 1); i >= 0; i--) {
+        const it = dailyCompletion[i];
+        if (it.done === it.total) {
+          streak++;
+        } else if (it.done === 0 && i === curIdx) {
+          continue;
+        } else {
+          break;
+        }
+      }
+
+      const overallPct = Math.round((doneTasks / 311) * 100);
+      const graphPctEl = document.getElementById('graph-stat-pct');
+      if (graphPctEl) graphPctEl.textContent = overallPct + '%';
+      const graphStreakEl = document.getElementById('graph-stat-streak');
+      if (graphStreakEl) graphStreakEl.textContent = streak + (streak === 1 ? ' Day' : ' Days');
+
+      renderSvgGraph(dailyCompletion, dark);
+      renderCategoryCards(cats, dark);
+      renderCalendarHeatmap(dailyCompletion, dark);
+    }
+
+    function renderSvgGraph(data, dark) {
+      const svg = document.getElementById('goal-completion-svg');
+      if (!svg) return;
+
+      const w = 760, h = 260;
+      const padL = 46, padR = 24, padT = 30, padB = 40;
+      const plotW = w - padL - padR;
+      const plotH = h - padT - padB;
+      const n = data.length;
+
+      const getX = i => padL + (i / (n - 1)) * plotW;
+      const getY = pct => (padT + plotH) - (pct / 100) * plotH;
+
+      const axisColor = dark ? '#2A2C38' : '#E3E5EC';
+      const textColor = dark ? '#8E939D' : '#686D76';
+      const bgPhase1 = dark ? 'rgba(43,86,245,0.04)' : 'rgba(43,86,245,0.05)';
+      const bgPhase2 = dark ? 'rgba(29,184,122,0.04)' : 'rgba(29,184,122,0.05)';
+      const bgPhase3 = dark ? 'rgba(124,77,255,0.04)' : 'rgba(124,77,255,0.05)';
+
+      const xPhase1End = getX(29); // Nov 30
+      const xPhase2End = getX(60); // Dec 31
+      const xPhase3End = getX(92); // Feb 1
+
+      let actualPoints = [];
+      data.forEach((d, i) => {
+        const x = getX(i);
+        const y = getY(d.cumPct);
+        actualPoints.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+      });
+
+      const pathD = 'M ' + actualPoints.join(' L ');
+      const areaD = `M ${getX(0)},${getY(0)} L ` + actualPoints.join(' L ') + ` L ${getX(n - 1)},${getY(0)} Z`;
+
+      const targetX1 = getX(0), targetY1 = getY(0);
+      const targetX2 = getX(n - 1), targetY2 = getY(100);
+
+      const curIdx = ALL_DATES.indexOf(cur);
+      const curX = curIdx >= 0 ? getX(curIdx) : -1;
+      const curY = curIdx >= 0 ? getY(data[curIdx].cumPct) : -1;
+
+      let s = `
+        <defs>
+          <linearGradient id="goalGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#2B56F5" stop-opacity="${dark ? 0.35 : 0.25}"/>
+            <stop offset="100%" stop-color="#2B56F5" stop-opacity="0.0"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Phase background zones -->
+        <rect x="${padL}" y="${padT}" width="${xPhase1End - padL}" height="${plotH}" fill="${bgPhase1}"/>
+        <rect x="${xPhase1End}" y="${padT}" width="${xPhase2End - xPhase1End}" height="${plotH}" fill="${bgPhase2}"/>
+        <rect x="${xPhase2End}" y="${padT}" width="${xPhase3End - xPhase2End}" height="${plotH}" fill="${bgPhase3}"/>
+
+        <!-- Phase vertical dividers -->
+        <line x1="${xPhase1End}" y1="${padT}" x2="${xPhase1End}" y2="${padT + plotH}" stroke="${axisColor}" stroke-dasharray="3,3"/>
+        <line x1="${xPhase2End}" y1="${padT}" x2="${xPhase2End}" y2="${padT + plotH}" stroke="${axisColor}" stroke-dasharray="3,3"/>
+
+        <text x="${(padL + xPhase1End) / 2}" y="${padT + 14}" fill="#2B56F5" font-size="9" font-weight="800" text-anchor="middle" letter-spacing="1">PHASE 1 · NOV</text>
+        <text x="${(xPhase1End + xPhase2End) / 2}" y="${padT + 14}" fill="#1DB87A" font-size="9" font-weight="800" text-anchor="middle" letter-spacing="1">PHASE 2 · DEC</text>
+        <text x="${(xPhase2End + xPhase3End) / 2}" y="${padT + 14}" fill="#7C4DFF" font-size="9" font-weight="800" text-anchor="middle" letter-spacing="1">PHASE 3 · JAN-FEB</text>
+      `;
+
+      [0, 25, 50, 75, 100].forEach(p => {
+        const y = getY(p);
+        s += `
+          <line x1="${padL}" y1="${y}" x2="${padL + plotW}" y2="${y}" stroke="${axisColor}" stroke-width="1" stroke-dasharray="${p === 0 ? '' : '3,4'}"/>
+          <text x="${padL - 8}" y="${y + 3}" fill="${textColor}" font-size="9" font-weight="700" text-anchor="end">${p}%</text>
+        `;
+      });
+
+      const xLabels = [
+        { i: 0, label: 'Nov 01' },
+        { i: 14, label: 'Nov 15' },
+        { i: 30, label: 'Dec 01' },
+        { i: 44, label: 'Dec 15' },
+        { i: 61, label: 'Jan 01' },
+        { i: 75, label: 'Jan 15' },
+        { i: 92, label: 'Feb 01' }
+      ];
+      xLabels.forEach(xl => {
+        const x = getX(xl.i);
+        s += `<text x="${x}" y="${padT + plotH + 20}" fill="${textColor}" font-size="10" font-weight="600" text-anchor="middle">${xl.label}</text>`;
+      });
+
+      // Ideal target line
+      s += `<line x1="${targetX1}" y1="${targetY1}" x2="${targetX2}" y2="${targetY2}" stroke="${dark ? '#5A5F6E' : '#94A3B8'}" stroke-width="2" stroke-dasharray="5,5"/>`;
+
+      // Actual curve
+      s += `
+        <path d="${areaD}" fill="url(#goalGrad)"/>
+        <path d="${pathD}" fill="none" stroke="#2B56F5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      `;
+
+      // Current Day marker
+      if (curIdx >= 0) {
+        s += `
+          <line x1="${curX}" y1="${padT}" x2="${curX}" y2="${padT + plotH}" stroke="#2B56F5" stroke-width="1.5" stroke-dasharray="2,2"/>
+          <circle cx="${curX}" cy="${curY}" r="6" fill="#2B56F5" stroke="#FFFFFF" stroke-width="2"/>
+        `;
+      }
+
+      // Interactive hover columns
+      const colW = plotW / n;
+      data.forEach((d, i) => {
+        const x = getX(i);
+        s += `
+          <rect x="${x - colW / 2}" y="${padT}" width="${colW}" height="${plotH}" fill="transparent"
+            style="cursor:pointer"
+            onmouseenter="showGraphTooltip(event, ${i})"
+            onmousemove="showGraphTooltip(event, ${i})"
+            onmouseleave="hideGraphTooltip()"
+            onclick="jumpFromGraph('${d.date}')"
+          />
+        `;
+      });
+
+      svg.innerHTML = s;
+    }
+
+    function showGraphTooltip(e, idx) {
+      const d = window.__graphData ? window.__graphData[idx] : null;
+      if (!d) return;
+      const tip = document.getElementById('graph-tooltip');
+      if (!tip) return;
+      const container = document.getElementById('goal-completion-svg').getBoundingClientRect();
+      const relX = e.clientX - container.left;
+      const relY = e.clientY - container.top;
+
+      tip.innerHTML = `
+        <div style="font-weight:800;font-size:.78rem;margin-bottom:2px">${d.info.f} · ${d.info.ph.split('·')[0].trim()}</div>
+        <div style="color:#8E939D;font-size:.7rem;margin-bottom:6px">${d.done} of ${d.total} tasks complete (${d.pct}%)</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid rgba(142,147,157,.2);padding-top:4px">
+          <span style="font-size:.65rem;color:#8E939D">Blueprint Total:</span>
+          <span style="font-weight:800;color:#2B56F5">${d.cumPct}% (${d.cumDone}/311)</span>
+        </div>
+        <div style="font-size:.62rem;color:#2B56F5;margin-top:4px;font-weight:700">Click to open day →</div>
+      `;
+      tip.style.display = 'block';
+
+      const tipW = 160;
+      const posX = (relX + tipW + 20 > container.width) ? (relX - tipW - 15) : (relX + 15);
+      tip.style.left = Math.max(10, posX) + 'px';
+      tip.style.top = Math.max(10, relY - 40) + 'px';
+    }
+
+    function hideGraphTooltip() {
+      const tip = document.getElementById('graph-tooltip');
+      if (tip) tip.style.display = 'none';
+    }
+
+    function renderCategoryCards(cats, dark) {
+      const container = document.getElementById('category-cards');
+      if (!container) return;
+      let h = '';
+      Object.values(cats).forEach(c => {
+        const pct = c.total > 0 ? Math.round((c.done / c.total) * 100) : 0;
+        h += `
+          <div class="lift sq-sm p-4 flex flex-col justify-between" style="border-radius:18px">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="t-label" style="color:${c.color}">${c.name}</span>
+                <span class="text-xs font-black" style="color:${c.color}">${pct}%</span>
+              </div>
+              <p class="t-data text-2xl mt-2 font-black">${c.done}<span class="text-xs font-semibold text-gray-500 font-normal"> / ${c.total} days</span></p>
+              <p class="t-sub mt-1" style="color:#8E939D">${c.desc}</p>
+            </div>
+            <div class="pbar mt-4">
+              <div class="pbar-fill" style="width:${pct}%;background:${c.color}"></div>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = h;
+    }
+
+    function renderCalendarHeatmap(data, dark) {
+      const container = document.getElementById('calendar-heatmap');
+      if (!container) return;
+
+      const months = [
+        { name: 'November 2026', phase: 'Phase 1 · Logic Formulation', items: data.slice(0, 30), color: '#2B56F5' },
+        { name: 'December 2026', phase: 'Phase 2 · Core Engineering', items: data.slice(30, 61), color: '#1DB87A' },
+        { name: 'January – February 2027', phase: 'Phase 3 · Sem 6 Acceleration', items: data.slice(61), color: '#7C4DFF' },
+      ];
+
+      let h = '';
+      months.forEach(m => {
+        h += `
+          <div class="lift sq-sm p-4" style="border-radius:18px">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold">${m.name}</span>
+              <span class="t-label sq-pill px-2.5 py-0.5" style="background:${m.color}15;color:${m.color}">${m.phase}</span>
+            </div>
+            <div class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-15 gap-2">
+        `;
+
+        m.items.forEach(d => {
+          const isSelected = (d.date === cur);
+          let bg = dark ? '#17181F' : '#FFFFFF';
+          let border = isSelected ? 'border: 2px solid #2B56F5;' : 'border: 1px solid transparent;';
+          let textColor = dark ? '#8E939D' : '#686D76';
+
+          if (d.pct === 100) {
+            bg = '#1DB87A';
+            textColor = '#FFFFFF';
+          } else if (d.pct > 0) {
+            bg = dark ? 'rgba(245,166,35,.22)' : 'rgba(245,166,35,.18)';
+            textColor = '#F5A623';
+          }
+
+          const dayNum = d.date.split('-')[2];
+          h += `
+            <button onclick="jumpFromGraph('${d.date}')"
+              class="touch sq-xs flex flex-col items-center justify-center pressable tr p-1"
+              style="min-height:42px;background:${bg};color:${textColor};${border};border-radius:10px"
+              title="${d.info.f}: ${d.done}/${d.total} tasks done">
+              <span style="font-size:.78rem;font-weight:800;line-height:1">${dayNum}</span>
+              <span style="font-size:.58rem;font-weight:600;margin-top:2px;opacity:.85">${d.done}/${d.total}</span>
+            </button>
+          `;
+        });
+
+        h += `
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = h;
+    }
+
     /* ── FULL RENDER ──────────────────────────────────────────── */
     function render() {
-      renderHero(); renderBadges(); renderTaskBlock(); renderChecks(); renderStats(); applyTheme();
+      renderHero();
+      renderBadges();
+      renderTaskBlock();
+      renderChecks();
+      renderStats();
+      updateNavButtons();
+      if (activeMainView === 'history') {
+        renderHistory();
+      }
+      applyTheme();
     }
   </script>
 </body>
