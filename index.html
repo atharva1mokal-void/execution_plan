@@ -27,15 +27,18 @@
       from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import { getFirestore, doc, setDoc, getDoc, onSnapshot }
       from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { getAnalytics, isSupported }
+      from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js';
 
     /* ── YOUR FIREBASE CONFIG ── REPLACE THIS BLOCK ───────── */
     const FIREBASE_CONFIG = {
-      apiKey:            "PASTE_YOUR_apiKey_HERE",
-      authDomain:        "PASTE_YOUR_authDomain_HERE",
-      projectId:         "PASTE_YOUR_projectId_HERE",
-      storageBucket:     "PASTE_YOUR_storageBucket_HERE",
-      messagingSenderId: "PASTE_YOUR_messagingSenderId_HERE",
-      appId:             "PASTE_YOUR_appId_HERE"
+      apiKey: "AIzaSyB4ZYa_e_VgmCxbsgQz_EhdhG4EILAqIT0",
+      authDomain: "execution-blueprint-tracker.firebaseapp.com",
+      projectId: "execution-blueprint-tracker",
+      storageBucket: "execution-blueprint-tracker.firebasestorage.app",
+      messagingSenderId: "77274725494",
+      appId: "1:77274725494:web:fd5fee6622c2f2d0aa3357",
+      measurementId: "G-28JPWV6KQ8"
     };
     /* ────────────────────────────────────────────────────── */
 
@@ -43,6 +46,9 @@
     const auth     = getAuth(app);
     const db       = getFirestore(app);
     const gProvider= new GoogleAuthProvider();
+
+    let analytics = null;
+    isSupported().then(yes => { if(yes) analytics = getAnalytics(app); }).catch(()=>{});
 
     /* Expose to global scope so non-module handlers can call */
     window.__fb = { auth, db, signInWithEmailAndPassword, createUserWithEmailAndPassword,
