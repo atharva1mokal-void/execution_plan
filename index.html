@@ -1,17 +1,25 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0C0D12" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <title>Execution Blueprint Tracker</title>
-  <meta name="description" content="Systems & AI Strategic Execution Blueprint — CSE (AI/ML) · GATE · Peak Physique · Sem 6 SGPA"/>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..900;1,14..32,300..900&display=swap" rel="stylesheet"/>
+  <meta name="description"
+    content="Systems & AI Strategic Execution Blueprint — CSE (AI/ML) · GATE · Peak Physique · Sem 6 SGPA" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..900;1,14..32,300..900&display=swap"
+    rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
-      theme: { extend: { fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'] } } }
+      theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] } } }
     };
   </script>
 
@@ -21,9 +29,11 @@
        Firebase Console → Project Settings → Your apps → SDK setup
   ════════════════════════════════════════════════════════ -->
   <script type="module">
-    import { initializeApp }        from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-             signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged }
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import {
+      getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+      signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged
+    }
       from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import { getFirestore, doc, setDoc, getDoc, onSnapshot }
       from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
@@ -42,18 +52,20 @@
     };
     /* ────────────────────────────────────────────────────── */
 
-    const app      = initializeApp(FIREBASE_CONFIG);
-    const auth     = getAuth(app);
-    const db       = getFirestore(app);
-    const gProvider= new GoogleAuthProvider();
+    const app = initializeApp(FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const gProvider = new GoogleAuthProvider();
 
     let analytics = null;
-    isSupported().then(yes => { if(yes) analytics = getAnalytics(app); }).catch(()=>{});
+    isSupported().then(yes => { if (yes) analytics = getAnalytics(app); }).catch(() => { });
 
     /* Expose to global scope so non-module handlers can call */
-    window.__fb = { auth, db, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-                    signInWithPopup, gProvider, signOut, onAuthStateChanged,
-                    doc, setDoc, getDoc, onSnapshot };
+    window.__fb = {
+      auth, db, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+      signInWithPopup, gProvider, signOut, onAuthStateChanged,
+      doc, setDoc, getDoc, onSnapshot
+    };
 
     /* ── Auth state listener ──────────────────────────────── */
     onAuthStateChanged(auth, async user => {
@@ -69,14 +81,14 @@
     });
 
     /* ── Cloud helpers ────────────────────────────────────── */
-    async function loadOrInitCloud(uid){
-      const ref  = doc(db, 'users', uid);
+    async function loadOrInitCloud(uid) {
+      const ref = doc(db, 'users', uid);
       const snap = await getDoc(ref);
-      if(snap.exists()){
+      if (snap.exists()) {
         const data = snap.data();
         /* Merge cloud → local, cloud wins */
         S.checks = data.checks || {};
-        S.theme  = data.theme  || 'dark';
+        S.theme = data.theme || 'dark';
         applyTheme();
         render();
       } else {
@@ -87,15 +99,15 @@
     }
 
     let _unsubSync = null;
-    function setupRealtimeSync(uid){
-      if(_unsubSync) _unsubSync();
+    function setupRealtimeSync(uid) {
+      if (_unsubSync) _unsubSync();
       const ref = doc(db, 'users', uid);
       _unsubSync = onSnapshot(ref, snap => {
-        if(!snap.exists()) return;
+        if (!snap.exists()) return;
         const data = snap.data();
         /* Silently update local state when another device writes */
         S.checks = data.checks || {};
-        S.theme  = data.theme  || S.theme;
+        S.theme = data.theme || S.theme;
         applyTheme();
         render();
         showSyncPulse();
@@ -103,823 +115,1081 @@
     }
 
     /* ── Write to cloud ───────────────────────────────────── */
-    window.__cloudSave = async function(){
+    window.__cloudSave = async function () {
       const user = window.__currentUser;
-      if(!user) return;
+      if (!user) return;
       try {
         const ref = doc(db, 'users', user.uid);
         await setDoc(ref, { checks: S.checks, theme: S.theme }, { merge: true });
         showSaveDot();
-      } catch(e) { console.warn('Cloud save failed:', e); }
+      } catch (e) { console.warn('Cloud save failed:', e); }
     };
   </script>
 
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', ui-sans-serif; -webkit-font-smoothing: antialiased; min-height: 100dvh; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', ui-sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+    }
 
     /* ── Scrollbar hidden ── */
-    ::-webkit-scrollbar { width: 0; height: 0; }
+    ::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
 
     /* ── Squircle spec — 24 px radius everywhere ── */
-    .sq    { border-radius: 24px; }
-    .sq-sm { border-radius: 16px; }
-    .sq-xs { border-radius: 12px; }
-    .sq-pill { border-radius: 999px; }
+    .sq {
+      border-radius: 24px;
+    }
+
+    .sq-sm {
+      border-radius: 16px;
+    }
+
+    .sq-xs {
+      border-radius: 12px;
+    }
+
+    .sq-pill {
+      border-radius: 999px;
+    }
 
     /* ── Tone layers — NO border lines, NO glows ── */
-    .canvas { background-color: #0C0D12; color: #FFFFFF; }
-    .card   { background-color: #17181F; }
-    .lift   { background-color: #1E202A; }
-    .rim    { background-color: #2A2C38; }
-    html:not(.dark) .canvas { background-color: #F4F5F8; color: #111214; }
-    html:not(.dark) .card   { background-color: #FFFFFF; }
-    html:not(.dark) .lift   { background-color: #F0F1F5; }
-    html:not(.dark) .rim    { background-color: #E3E5EC; }
+    .canvas {
+      background-color: #0C0D12;
+      color: #FFFFFF;
+    }
+
+    .card {
+      background-color: #17181F;
+    }
+
+    .lift {
+      background-color: #1E202A;
+    }
+
+    .rim {
+      background-color: #2A2C38;
+    }
+
+    html:not(.dark) .canvas {
+      background-color: #F4F5F8;
+      color: #111214;
+    }
+
+    html:not(.dark) .card {
+      background-color: #FFFFFF;
+    }
+
+    html:not(.dark) .lift {
+      background-color: #F0F1F5;
+    }
+
+    html:not(.dark) .rim {
+      background-color: #E3E5EC;
+    }
 
     /* ── Typography system ── */
-    .t-hero  { font-size: clamp(2rem,5vw,3.25rem); font-weight:900; letter-spacing:-.04em; line-height:1.05; }
-    .t-label { font-size:.625rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
-    .t-data  { font-size:clamp(1.4rem,2.5vw,1.9rem); font-weight:800; letter-spacing:-.03em; }
-    .t-card  { font-size:.8125rem; font-weight:700; }
-    .t-sub   { font-size:.6875rem; font-weight:500; }
+    .t-hero {
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      font-weight: 900;
+      letter-spacing: -.04em;
+      line-height: 1.05;
+    }
+
+    .t-label {
+      font-size: .625rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .t-data {
+      font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+      font-weight: 800;
+      letter-spacing: -.03em;
+    }
+
+    .t-card {
+      font-size: .8125rem;
+      font-weight: 700;
+    }
+
+    .t-sub {
+      font-size: .6875rem;
+      font-weight: 500;
+    }
 
     /* ── Touch targets — 48 px min ── */
-    .touch { min-height:48px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+    .touch {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
 
     /* ── Transitions ── */
-    .tr { transition: all .2s cubic-bezier(.4,0,.2,1); }
-    .pressable:active { transform: scale(.97); }
+    .tr {
+      transition: all .2s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .pressable:active {
+      transform: scale(.97);
+    }
 
     /* ── Progress ring ── */
-    .ring-track { fill:none; stroke:#2A2C38; stroke-width:5; }
-    html:not(.dark) .ring-track { stroke:#E3E5EC; }
-    .ring-fill  { fill:none; stroke-width:5; stroke-linecap:round; transform-origin:center; transform:rotate(-90deg); transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1),stroke .3s; }
+    .ring-track {
+      fill: none;
+      stroke: #2A2C38;
+      stroke-width: 5;
+    }
+
+    html:not(.dark) .ring-track {
+      stroke: #E3E5EC;
+    }
+
+    .ring-fill {
+      fill: none;
+      stroke-width: 5;
+      stroke-linecap: round;
+      transform-origin: center;
+      transform: rotate(-90deg);
+      transition: stroke-dashoffset .6s cubic-bezier(.4, 0, .2, 1), stroke .3s;
+    }
 
     /* ── Progress bar ── */
-    .pbar { height:5px; border-radius:999px; background:#2A2C38; overflow:hidden; }
-    html:not(.dark) .pbar { background:#E3E5EC; }
-    .pbar-fill { height:100%; border-radius:999px; transition:width .55s cubic-bezier(.4,0,.2,1); }
+    .pbar {
+      height: 5px;
+      border-radius: 999px;
+      background: #2A2C38;
+      overflow: hidden;
+    }
+
+    html:not(.dark) .pbar {
+      background: #E3E5EC;
+    }
+
+    .pbar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width .55s cubic-bezier(.4, 0, .2, 1);
+    }
 
     /* ── Horizontal pill track ── */
-    .pill-row { display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; white-space:nowrap; }
-    .pill-row::-webkit-scrollbar { display:none; }
+    .pill-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+      white-space: nowrap;
+    }
+
+    .pill-row::-webkit-scrollbar {
+      display: none;
+    }
 
     /* ── Separator — tone only ── */
-    .sep { height:1px; background:#2A2C38; }
-    html:not(.dark) .sep { background:#E3E5EC; }
+    .sep {
+      height: 1px;
+      background: #2A2C38;
+    }
+
+    html:not(.dark) .sep {
+      background: #E3E5EC;
+    }
 
     /* ── Save indicators ── */
-    #save-dot, #sync-pulse { transition:opacity .4s; opacity:0; }
+    #save-dot,
+    #sync-pulse {
+      transition: opacity .4s;
+      opacity: 0;
+    }
 
     /* ── Fade-up entry ── */
-    @keyframes fu { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)} }
-    .fu  { animation: fu .35s cubic-bezier(.4,0,.2,1) both; }
-    .fu1 { animation-delay:.04s; }
-    .fu2 { animation-delay:.08s; }
-    .fu3 { animation-delay:.12s; }
-    .fu4 { animation-delay:.16s; }
-    .fu5 { animation-delay:.20s; }
+    @keyframes fu {
+      from {
+        opacity: 0;
+        transform: translateY(8px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .fu {
+      animation: fu .35s cubic-bezier(.4, 0, .2, 1) both;
+    }
+
+    .fu1 {
+      animation-delay: .04s;
+    }
+
+    .fu2 {
+      animation-delay: .08s;
+    }
+
+    .fu3 {
+      animation-delay: .12s;
+    }
+
+    .fu4 {
+      animation-delay: .16s;
+    }
+
+    .fu5 {
+      animation-delay: .20s;
+    }
 
     /* ── Date input ── */
-    input[type="date"] { color-scheme:dark; }
-    html:not(.dark) input[type="date"] { color-scheme:light; }
+    input[type="date"] {
+      color-scheme: dark;
+    }
+
+    html:not(.dark) input[type="date"] {
+      color-scheme: light;
+    }
 
     /* ── Input field base ── */
     .inp {
-      width:100%; border:none; outline:none;
-      border-radius:16px; padding:0 18px;
-      min-height:52px; font-size:.875rem; font-weight:600;
-      background:#1E202A; color:#FFFFFF; transition:box-shadow .2s;
-      font-family:inherit;
+      width: 100%;
+      border: none;
+      outline: none;
+      border-radius: 16px;
+      padding: 0 18px;
+      min-height: 52px;
+      font-size: .875rem;
+      font-weight: 600;
+      background: #1E202A;
+      color: #FFFFFF;
+      transition: box-shadow .2s;
+      font-family: inherit;
     }
-    .inp:focus { box-shadow: 0 0 0 2px #2B56F5; }
-    html:not(.dark) .inp { background:#F0F1F5; color:#111214; }
+
+    .inp:focus {
+      box-shadow: 0 0 0 2px #2B56F5;
+    }
+
+    html:not(.dark) .inp {
+      background: #F0F1F5;
+      color: #111214;
+    }
 
     /* ── Auth screen overlay ── */
     #auth-screen {
-      position:fixed; inset:0; z-index:100;
-      display:flex; align-items:center; justify-content:center;
-      padding:24px; background:#0C0D12;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: #0C0D12;
     }
-    html:not(.dark) #auth-screen { background:#F4F5F8; }
-    #app-screen { display:none; }
+
+    html:not(.dark) #auth-screen {
+      background: #F4F5F8;
+    }
+
+    #app-screen {
+      display: none;
+    }
 
     /* ── Spinner ── */
-    @keyframes spin { to { transform:rotate(360deg); } }
-    .spinner { width:20px; height:20px; border:2.5px solid rgba(255,255,255,.15); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2.5px solid rgba(255, 255, 255, .15);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
 
     /* ── Error toast ── */
     #auth-error {
-      padding:10px 14px; border-radius:12px;
-      background:rgba(245,59,87,.1); color:#F53B57;
-      font-size:.72rem; font-weight:600; letter-spacing:.02em;
-      display:none;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(245, 59, 87, .1);
+      color: #F53B57;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .02em;
+      display: none;
     }
 
     /* ── User badge strip ── */
-    #user-badge { display:flex; align-items:center; gap:8px; }
+    #user-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     #user-avatar {
-      width:28px; height:28px; border-radius:50%;
-      background:linear-gradient(135deg,#2B56F5,#7C4DFF);
-      display:flex; align-items:center; justify-content:center;
-      font-size:.65rem; font-weight:800; color:#FFF; flex-shrink:0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2B56F5, #7C4DFF);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .65rem;
+      font-weight: 800;
+      color: #FFF;
+      flex-shrink: 0;
     }
   </style>
 </head>
 
 <body class="canvas tr" id="body-root">
 
-<!-- ════════════════════════════════════════════════════
+  <!-- ════════════════════════════════════════════════════
      AUTH SCREEN
 ════════════════════════════════════════════════════ -->
-<div id="auth-screen">
-  <div class="card sq w-full max-w-[420px] p-8 fu" id="auth-card">
+  <div id="auth-screen">
+    <div class="card sq w-full max-w-[420px] p-8 fu" id="auth-card">
 
-    <!-- Logo mark -->
-    <div style="width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#2B56F5,#7C4DFF);display:flex;align-items:center;justify-content:center;margin-bottom:24px">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-        <path d="M3 17L7 9L11 13L15 5L18.5 9" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="18.5" cy="9" r="2" fill="white"/>
-      </svg>
-    </div>
-
-    <!-- Title -->
-    <h1 style="font-size:1.5rem;font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:4px">Execution Tracker</h1>
-    <p class="t-sub" style="color:#8E939D;margin-bottom:28px">Sign in to sync your blueprint across all devices</p>
-
-    <!-- Tab switcher -->
-    <div class="lift sq-sm p-1 flex gap-1 mb-6" id="auth-tabs">
-      <button id="tab-login" onclick="switchTab('login')"
-        class="flex-1 touch sq-xs pressable tr text-xs font-bold tracking-wide"
-        style="background:#2B56F5;color:#FFF;border-radius:10px">
-        Sign In
-      </button>
-      <button id="tab-signup" onclick="switchTab('signup')"
-        class="flex-1 touch sq-xs pressable tr text-xs font-bold tracking-wide"
-        style="color:#8E939D;border-radius:10px">
-        Create Account
-      </button>
-    </div>
-
-    <!-- Email / Password fields -->
-    <div class="flex flex-col gap-3 mb-3">
-      <input id="auth-email" type="email" placeholder="Email address" class="inp" autocomplete="email"/>
-      <input id="auth-password" type="password" placeholder="Password (min 6 chars)" class="inp" autocomplete="current-password"/>
-      <!-- Confirm password — signup only -->
-      <input id="auth-confirm" type="password" placeholder="Confirm password" class="inp" style="display:none" autocomplete="new-password"/>
-    </div>
-
-    <!-- Error -->
-    <div id="auth-error" class="mb-3"></div>
-
-    <!-- Primary CTA -->
-    <button id="auth-submit-btn" onclick="handleEmailAuth()"
-      class="touch sq-sm pressable tr w-full font-bold text-sm tracking-wide mb-3"
-      style="background:#2B56F5;color:#FFF;border-radius:16px">
-      <span id="auth-submit-label">Sign In</span>
-      <div id="auth-spinner" class="spinner" style="display:none;margin-left:10px"></div>
-    </button>
-
-    <!-- Divider — tone separation, no border line -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <div class="sep flex-1"></div>
-      <span class="t-label" style="color:#5A5F6E">or</span>
-      <div class="sep flex-1"></div>
-    </div>
-
-    <!-- Google Sign-In -->
-    <button id="google-btn" onclick="handleGoogleAuth()"
-      class="touch sq-sm pressable tr w-full font-bold text-sm tracking-wide"
-      style="background:#1E202A;color:#FFFFFF;border-radius:16px;gap:10px">
-      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.4 30.2 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.8 6.1C12.4 13 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.5 2.9-2.2 5.4-4.7 7l7.3 5.7c4.3-4 6.7-9.9 6.7-16.7z"/><path fill="#FBBC05" d="M10.5 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.1.8-4.6l-7.8-6C1 16.1 0 20 0 24s1 7.9 2.7 11.3l7.8-6.7z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.3-5.7c-2 1.4-4.6 2.2-7.9 2.2-6.2 0-11.5-4.2-13.4-9.8l-7.8 6.1C6.6 42.6 14.6 48 24 48z"/></svg>
-      Continue with Google
-    </button>
-
-    <!-- Firebase not configured notice -->
-    <p id="config-warning" class="t-label mt-4 text-center" style="color:#F5A623;display:none">
-      Firebase config not set — running in offline mode
-    </p>
-
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════
-     APP SCREEN
-════════════════════════════════════════════════════ -->
-<div id="app-screen">
-<div class="max-w-[900px] mx-auto px-4 sm:px-6 pb-16">
-
-  <!-- HERO HEADER -->
-  <header class="pt-10 pb-8 fu">
-    <div class="flex items-start justify-between gap-4">
-      <div class="flex-1">
-        <p class="t-label" id="hero-phase-label" style="color:#8E939D">Phase 1 · Nov 2026</p>
-        <h2 class="t-hero mt-2" id="hero-date-display">Nov 01</h2>
-        <p class="t-sub mt-3" id="hero-task-preview" style="color:#8E939D;max-width:520px">—</p>
+      <!-- Logo mark -->
+      <div
+        style="width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#2B56F5,#7C4DFF);display:flex;align-items:center;justify-content:center;margin-bottom:24px">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M3 17L7 9L11 13L15 5L18.5 9" stroke="white" stroke-width="2.2" stroke-linecap="round"
+            stroke-linejoin="round" />
+          <circle cx="18.5" cy="9" r="2" fill="white" />
+        </svg>
       </div>
 
-      <!-- Controls column -->
-      <div class="flex flex-col items-end gap-2 pt-1 flex-shrink-0">
-        <!-- User badge -->
-        <div id="user-badge">
-          <div id="user-avatar">?</div>
-          <div style="max-width:120px">
-            <p id="user-name" class="t-card" style="font-size:.7rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</p>
-            <p class="t-sub" style="color:#8E939D;font-size:.6rem">Signed in</p>
-          </div>
-        </div>
+      <!-- Title -->
+      <h1 style="font-size:1.5rem;font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:4px">Execution
+        Tracker</h1>
+      <p class="t-sub" style="color:#8E939D;margin-bottom:28px">Sign in to sync your blueprint across all devices</p>
 
-        <!-- Action row -->
-        <div class="flex gap-2 items-center">
-          <!-- Sync indicator -->
-          <div id="sync-pulse" style="display:flex;align-items:center;gap:5px">
-            <span style="width:6px;height:6px;border-radius:50%;background:#1DB87A;display:inline-block"></span>
-            <span class="t-label" style="color:#1DB87A;font-size:.58rem">Synced</span>
-          </div>
-          <!-- Save indicator -->
-          <div id="save-dot" style="display:flex;align-items:center;gap:5px">
-            <span style="width:6px;height:6px;border-radius:50%;background:#2B56F5;display:inline-block"></span>
-            <span class="t-label" style="color:#2B56F5;font-size:.58rem">Saved</span>
-          </div>
-          <!-- Theme -->
-          <button onclick="toggleTheme()" class="touch sq-pill pressable tr px-4 text-xs font-bold tracking-wide card"
-            style="min-height:36px;color:#8E939D" id="theme-btn">
-            <span id="theme-lbl">Dark</span>
-          </button>
-          <!-- Sign out -->
-          <button onclick="handleSignOut()" class="touch sq-pill pressable tr px-3 text-xs font-bold tracking-wide"
-            style="min-height:36px;background:rgba(245,59,87,.1);color:#F53B57;border-radius:999px">
-            Out
-          </button>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- STAT SHELF -->
-  <section class="card sq p-0 fu fu1 mb-4 overflow-hidden">
-    <div class="grid grid-cols-3" style="gap:1px;background:#2A2C38" id="stat-grid">
-      <!-- Daily ring -->
-      <div class="card p-4 flex flex-col gap-2">
-        <p class="t-label" style="color:#8E939D">Today</p>
-        <div class="flex items-center gap-3 mt-1">
-          <svg width="48" height="48" viewBox="0 0 48 48" class="flex-shrink-0">
-            <circle cx="24" cy="24" r="19" class="ring-track"/>
-            <circle id="stat-ring" cx="24" cy="24" r="19" class="ring-fill" stroke="#2B56F5" stroke-dasharray="119.4" stroke-dashoffset="119.4"/>
-          </svg>
-          <div>
-            <p id="stat-daily-pct" class="t-data" style="line-height:1">0%</p>
-            <p id="stat-daily-frac" class="t-sub mt-0.5" style="color:#8E939D">0 of 0</p>
-          </div>
-        </div>
-      </div>
-      <!-- Overall -->
-      <div class="card p-4 flex flex-col justify-between">
-        <p class="t-label" style="color:#8E939D">Blueprint</p>
-        <div>
-          <p id="stat-overall-pct" class="t-data mt-2" style="line-height:1">0%</p>
-          <div class="pbar mt-3"><div id="stat-overall-bar" class="pbar-fill" style="width:0%;background:#2B56F5"></div></div>
-          <p id="stat-overall-sub" class="t-sub mt-1.5" style="color:#8E939D">93 days total</p>
-        </div>
-      </div>
-      <!-- Reset -->
-      <div class="card p-4 flex flex-col justify-between">
-        <p class="t-label" style="color:#8E939D">Cloud Data</p>
-        <div class="flex flex-col gap-2 mt-2">
-          <p class="t-sub" style="color:#5A5F6E">Firestore · real-time</p>
-          <button onclick="resetData()" class="pressable tr text-xs font-bold tracking-wider"
-            style="color:#F53B57;background:rgba(245,59,87,.08);min-height:36px;border-radius:10px;padding:0 12px">
-            RESET DATA
-          </button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- DATE NAV -->
-  <section class="card sq p-3 fu fu2 mb-4">
-    <div class="flex items-center gap-2">
-      <button onclick="changeDay(-1)" id="prev-btn"
-        class="touch sq-sm pressable tr flex-shrink-0 px-4 font-bold text-xs tracking-wide lift"
-        style="color:#8E939D;min-width:72px;border-radius:16px">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:4px">
-          <path d="M9 11.5L4.5 7L9 2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>Prev
-      </button>
-      <div class="flex-1 flex items-center justify-center gap-2">
-        <input type="date" id="date-picker" min="2026-11-01" max="2027-02-01"
-          onchange="onDatePicked(this.value)"
-          class="touch sq-sm text-xs font-bold text-center tr flex-1 max-w-[180px] px-3 lift"
-          style="border:none;outline:none;color:inherit;border-radius:16px"/>
-        <button onclick="goToToday()"
-          class="touch sq-sm pressable tr px-4 text-xs font-black tracking-widest flex-shrink-0"
-          style="background:#2B56F5;color:#FFF;border-radius:16px;min-width:64px">
-          TODAY
+      <!-- Tab switcher -->
+      <div class="lift sq-sm p-1 flex gap-1 mb-6" id="auth-tabs">
+        <button id="tab-login" onclick="switchTab('login')"
+          class="flex-1 touch sq-xs pressable tr text-xs font-bold tracking-wide"
+          style="background:#2B56F5;color:#FFF;border-radius:10px">
+          Sign In
+        </button>
+        <button id="tab-signup" onclick="switchTab('signup')"
+          class="flex-1 touch sq-xs pressable tr text-xs font-bold tracking-wide"
+          style="color:#8E939D;border-radius:10px">
+          Create Account
         </button>
       </div>
-      <button onclick="changeDay(1)" id="next-btn"
-        class="touch sq-sm pressable tr flex-shrink-0 px-4 font-bold text-xs tracking-wide lift"
-        style="color:#8E939D;min-width:72px;border-radius:16px">
-        Next
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-left:4px">
-          <path d="M5 2.5L9.5 7L5 11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+
+      <!-- Email / Password fields -->
+      <div class="flex flex-col gap-3 mb-3">
+        <input id="auth-email" type="email" placeholder="Email address" class="inp" autocomplete="email" />
+        <input id="auth-password" type="password" placeholder="Password (min 6 chars)" class="inp"
+          autocomplete="current-password" />
+        <!-- Confirm password — signup only -->
+        <input id="auth-confirm" type="password" placeholder="Confirm password" class="inp" style="display:none"
+          autocomplete="new-password" />
+      </div>
+
+      <!-- Error -->
+      <div id="auth-error" class="mb-3"></div>
+
+      <!-- Primary CTA -->
+      <button id="auth-submit-btn" onclick="handleEmailAuth()"
+        class="touch sq-sm pressable tr w-full font-bold text-sm tracking-wide mb-3"
+        style="background:#2B56F5;color:#FFF;border-radius:16px">
+        <span id="auth-submit-label">Sign In</span>
+        <div id="auth-spinner" class="spinner" style="display:none;margin-left:10px"></div>
       </button>
+
+      <!-- Divider — tone separation, no border line -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div class="sep flex-1"></div>
+        <span class="t-label" style="color:#5A5F6E">or</span>
+        <div class="sep flex-1"></div>
+      </div>
+
+      <!-- Google Sign-In -->
+      <button id="google-btn" onclick="handleGoogleAuth()"
+        class="touch sq-sm pressable tr w-full font-bold text-sm tracking-wide"
+        style="background:#1E202A;color:#FFFFFF;border-radius:16px;gap:10px">
+        <svg width="18" height="18" viewBox="0 0 48 48">
+          <path fill="#EA4335"
+            d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.4 30.2 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.8 6.1C12.4 13 17.8 9.5 24 9.5z" />
+          <path fill="#4285F4"
+            d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.5 2.9-2.2 5.4-4.7 7l7.3 5.7c4.3-4 6.7-9.9 6.7-16.7z" />
+          <path fill="#FBBC05"
+            d="M10.5 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.1.8-4.6l-7.8-6C1 16.1 0 20 0 24s1 7.9 2.7 11.3l7.8-6.7z" />
+          <path fill="#34A853"
+            d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.3-5.7c-2 1.4-4.6 2.2-7.9 2.2-6.2 0-11.5-4.2-13.4-9.8l-7.8 6.1C6.6 42.6 14.6 48 24 48z" />
+        </svg>
+        Continue with Google
+      </button>
+
+      <!-- Firebase not configured notice -->
+      <p id="config-warning" class="t-label mt-4 text-center" style="color:#F5A623;display:none">
+        Firebase config not set — running in offline mode
+      </p>
+
     </div>
-  </section>
+  </div>
 
-  <!-- BADGE PILL TRACK -->
-  <div class="pill-row mb-4 fu fu3" id="badge-track"></div>
+  <!-- ════════════════════════════════════════════════════
+     APP SCREEN
+════════════════════════════════════════════════════ -->
+  <div id="app-screen">
+    <div class="max-w-[900px] mx-auto px-4 sm:px-6 pb-16">
 
-  <!-- DAILY TASK BLOCK -->
-  <section class="card sq fu fu3 mb-4 overflow-hidden" id="task-block"></section>
+      <!-- HERO HEADER -->
+      <header class="pt-10 pb-8 fu">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1">
+            <p class="t-label" id="hero-phase-label" style="color:#8E939D">Phase 1 · Nov 2026</p>
+            <h2 class="t-hero mt-2" id="hero-date-display">Nov 01</h2>
+            <p class="t-sub mt-3" id="hero-task-preview" style="color:#8E939D;max-width:520px">—</p>
+          </div>
 
-  <!-- CHECKBOXES -->
-  <section class="card sq p-5 fu fu4 mb-4" id="check-section">
-    <div class="flex items-center justify-between mb-4">
-      <p class="t-label" style="color:#8E939D">Execution Log</p>
-      <p class="t-label" id="check-count-label" style="color:#5A5F6E">3 TASKS</p>
+          <!-- Controls column -->
+          <div class="flex flex-col items-end gap-2 pt-1 flex-shrink-0">
+            <!-- User badge -->
+            <div id="user-badge">
+              <div id="user-avatar">?</div>
+              <div style="max-width:120px">
+                <p id="user-name" class="t-card"
+                  style="font-size:.7rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</p>
+                <p class="t-sub" style="color:#8E939D;font-size:.6rem">Signed in</p>
+              </div>
+            </div>
+
+            <!-- Action row -->
+            <div class="flex gap-2 items-center">
+              <!-- Sync indicator -->
+              <div id="sync-pulse" style="display:flex;align-items:center;gap:5px">
+                <span style="width:6px;height:6px;border-radius:50%;background:#1DB87A;display:inline-block"></span>
+                <span class="t-label" style="color:#1DB87A;font-size:.58rem">Synced</span>
+              </div>
+              <!-- Save indicator -->
+              <div id="save-dot" style="display:flex;align-items:center;gap:5px">
+                <span style="width:6px;height:6px;border-radius:50%;background:#2B56F5;display:inline-block"></span>
+                <span class="t-label" style="color:#2B56F5;font-size:.58rem">Saved</span>
+              </div>
+              <!-- Theme -->
+              <button onclick="toggleTheme()"
+                class="touch sq-pill pressable tr px-4 text-xs font-bold tracking-wide card"
+                style="min-height:36px;color:#8E939D" id="theme-btn">
+                <span id="theme-lbl">Dark</span>
+              </button>
+              <!-- Sign out -->
+              <button onclick="handleSignOut()" class="touch sq-pill pressable tr px-3 text-xs font-bold tracking-wide"
+                style="min-height:36px;background:rgba(245,59,87,.1);color:#F53B57;border-radius:999px">
+                Out
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- STAT SHELF -->
+      <section class="card sq p-0 fu fu1 mb-4 overflow-hidden">
+        <div class="grid grid-cols-3" style="gap:1px;background:#2A2C38" id="stat-grid">
+          <!-- Daily ring -->
+          <div class="card p-4 flex flex-col gap-2">
+            <p class="t-label" style="color:#8E939D">Today</p>
+            <div class="flex items-center gap-3 mt-1">
+              <svg width="48" height="48" viewBox="0 0 48 48" class="flex-shrink-0">
+                <circle cx="24" cy="24" r="19" class="ring-track" />
+                <circle id="stat-ring" cx="24" cy="24" r="19" class="ring-fill" stroke="#2B56F5"
+                  stroke-dasharray="119.4" stroke-dashoffset="119.4" />
+              </svg>
+              <div>
+                <p id="stat-daily-pct" class="t-data" style="line-height:1">0%</p>
+                <p id="stat-daily-frac" class="t-sub mt-0.5" style="color:#8E939D">0 of 0</p>
+              </div>
+            </div>
+          </div>
+          <!-- Overall -->
+          <div class="card p-4 flex flex-col justify-between">
+            <p class="t-label" style="color:#8E939D">Blueprint</p>
+            <div>
+              <p id="stat-overall-pct" class="t-data mt-2" style="line-height:1">0%</p>
+              <div class="pbar mt-3">
+                <div id="stat-overall-bar" class="pbar-fill" style="width:0%;background:#2B56F5"></div>
+              </div>
+              <p id="stat-overall-sub" class="t-sub mt-1.5" style="color:#8E939D">93 days total</p>
+            </div>
+          </div>
+          <!-- Reset -->
+          <div class="card p-4 flex flex-col justify-between">
+            <p class="t-label" style="color:#8E939D">Cloud Data</p>
+            <div class="flex flex-col gap-2 mt-2">
+              <p class="t-sub" style="color:#5A5F6E">Firestore · real-time</p>
+              <button onclick="resetData()" class="pressable tr text-xs font-bold tracking-wider"
+                style="color:#F53B57;background:rgba(245,59,87,.08);min-height:36px;border-radius:10px;padding:0 12px">
+                RESET DATA
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DATE NAV -->
+      <section class="card sq p-3 fu fu2 mb-4">
+        <div class="flex items-center gap-2">
+          <button onclick="changeDay(-1)" id="prev-btn"
+            class="touch sq-sm pressable tr flex-shrink-0 px-4 font-bold text-xs tracking-wide lift"
+            style="color:#8E939D;min-width:72px;border-radius:16px">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:4px">
+              <path d="M9 11.5L4.5 7L9 2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>Prev
+          </button>
+          <div class="flex-1 flex items-center justify-center gap-2">
+            <input type="date" id="date-picker" min="2026-11-01" max="2027-02-01" onchange="onDatePicked(this.value)"
+              class="touch sq-sm text-xs font-bold text-center tr flex-1 max-w-[180px] px-3 lift"
+              style="border:none;outline:none;color:inherit;border-radius:16px" />
+            <button onclick="goToToday()"
+              class="touch sq-sm pressable tr px-4 text-xs font-black tracking-widest flex-shrink-0"
+              style="background:#2B56F5;color:#FFF;border-radius:16px;min-width:64px">
+              TODAY
+            </button>
+          </div>
+          <button onclick="changeDay(1)" id="next-btn"
+            class="touch sq-sm pressable tr flex-shrink-0 px-4 font-bold text-xs tracking-wide lift"
+            style="color:#8E939D;min-width:72px;border-radius:16px">
+            Next
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-left:4px">
+              <path d="M5 2.5L9.5 7L5 11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- BADGE PILL TRACK -->
+      <div class="pill-row mb-4 fu fu3" id="badge-track"></div>
+
+      <!-- DAILY TASK BLOCK -->
+      <section class="card sq fu fu3 mb-4 overflow-hidden" id="task-block"></section>
+
+      <!-- CHECKBOXES -->
+      <section class="card sq p-5 fu fu4 mb-4" id="check-section">
+        <div class="flex items-center justify-between mb-4">
+          <p class="t-label" style="color:#8E939D">Execution Log</p>
+          <p class="t-label" id="check-count-label" style="color:#5A5F6E">3 TASKS</p>
+        </div>
+        <div id="check-grid" class="flex flex-col gap-2"></div>
+      </section>
+
+      <!-- TIME WINDOWS -->
+      <section class="card sq p-5 fu fu5">
+        <p class="t-label mb-4" style="color:#8E939D">Locked Daily Time Windows</p>
+        <div class="flex flex-col gap-2">
+          <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
+            <div style="width:8px;height:8px;border-radius:50%;background:#2B56F5;flex-shrink:0"></div>
+            <div class="flex-1 min-w-0">
+              <p class="t-card">06:00 – 07:15 AM</p>
+              <p class="t-sub mt-0.5" style="color:#8E939D">Mind-Dependent Logic & Pseudocode</p>
+            </div>
+            <span class="t-label sq-pill px-2 py-1" style="background:rgba(43,86,245,.1);color:#2B56F5">LOGIC</span>
+          </div>
+          <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
+            <div style="width:8px;height:8px;border-radius:50%;background:#1DB87A;flex-shrink:0"></div>
+            <div class="flex-1 min-w-0">
+              <p class="t-card">07:15 – 08:00 AM</p>
+              <p class="t-sub mt-0.5" style="color:#8E939D">Peak Fitness / Physique Sprint</p>
+            </div>
+            <span class="t-label sq-pill px-2 py-1" style="background:rgba(29,184,122,.1);color:#1DB87A">GYM</span>
+          </div>
+          <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
+            <div style="width:8px;height:8px;border-radius:50%;background:#F5A623;flex-shrink:0"></div>
+            <div class="flex-1 min-w-0">
+              <p class="t-card">08:30 AM – 04:30 PM</p>
+              <p class="t-sub mt-0.5" style="color:#8E939D">College Academics · Sem 6 SGPA Focus</p>
+            </div>
+            <span class="t-label sq-pill px-2 py-1" style="background:rgba(245,166,35,.1);color:#F5A623">SEM 6</span>
+          </div>
+          <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
+            <div style="width:8px;height:8px;border-radius:50%;background:#7C4DFF;flex-shrink:0"></div>
+            <div class="flex-1 min-w-0">
+              <p class="t-card">05:00 – 07:00 PM</p>
+              <p class="t-sub mt-0.5" style="color:#8E939D">Rotational Slot — GATE / Mock Tests</p>
+            </div>
+            <span class="t-label sq-pill px-2 py-1" style="background:rgba(124,77,255,.1);color:#7C4DFF">GATE</span>
+          </div>
+          <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
+            <div style="width:8px;height:8px;border-radius:50%;background:#5A5F6E;flex-shrink:0"></div>
+            <div class="flex-1 min-w-0">
+              <p class="t-card">08:00 PM – 12:00 AM</p>
+              <p class="t-sub mt-0.5" style="color:#8E939D">Part-Time Work Shift · 4 Hours Fixed</p>
+            </div>
+            <span class="t-label sq-pill px-2 py-1" style="background:rgba(90,95,110,.12);color:#5A5F6E">WORK</span>
+          </div>
+        </div>
+      </section>
+
     </div>
-    <div id="check-grid" class="flex flex-col gap-2"></div>
-  </section>
+  </div><!-- /app-screen -->
 
-  <!-- TIME WINDOWS -->
-  <section class="card sq p-5 fu fu5">
-    <p class="t-label mb-4" style="color:#8E939D">Locked Daily Time Windows</p>
-    <div class="flex flex-col gap-2">
-      <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
-        <div style="width:8px;height:8px;border-radius:50%;background:#2B56F5;flex-shrink:0"></div>
-        <div class="flex-1 min-w-0"><p class="t-card">06:00 – 07:15 AM</p><p class="t-sub mt-0.5" style="color:#8E939D">Mind-Dependent Logic & Pseudocode</p></div>
-        <span class="t-label sq-pill px-2 py-1" style="background:rgba(43,86,245,.1);color:#2B56F5">LOGIC</span>
-      </div>
-      <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
-        <div style="width:8px;height:8px;border-radius:50%;background:#1DB87A;flex-shrink:0"></div>
-        <div class="flex-1 min-w-0"><p class="t-card">07:15 – 08:00 AM</p><p class="t-sub mt-0.5" style="color:#8E939D">Peak Fitness / Physique Sprint</p></div>
-        <span class="t-label sq-pill px-2 py-1" style="background:rgba(29,184,122,.1);color:#1DB87A">GYM</span>
-      </div>
-      <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
-        <div style="width:8px;height:8px;border-radius:50%;background:#F5A623;flex-shrink:0"></div>
-        <div class="flex-1 min-w-0"><p class="t-card">08:30 AM – 04:30 PM</p><p class="t-sub mt-0.5" style="color:#8E939D">College Academics · Sem 6 SGPA Focus</p></div>
-        <span class="t-label sq-pill px-2 py-1" style="background:rgba(245,166,35,.1);color:#F5A623">SEM 6</span>
-      </div>
-      <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
-        <div style="width:8px;height:8px;border-radius:50%;background:#7C4DFF;flex-shrink:0"></div>
-        <div class="flex-1 min-w-0"><p class="t-card">05:00 – 07:00 PM</p><p class="t-sub mt-0.5" style="color:#8E939D">Rotational Slot — GATE / Mock Tests</p></div>
-        <span class="t-label sq-pill px-2 py-1" style="background:rgba(124,77,255,.1);color:#7C4DFF">GATE</span>
-      </div>
-      <div class="lift sq-sm flex items-center gap-4 px-4 py-3">
-        <div style="width:8px;height:8px;border-radius:50%;background:#5A5F6E;flex-shrink:0"></div>
-        <div class="flex-1 min-w-0"><p class="t-card">08:00 PM – 12:00 AM</p><p class="t-sub mt-0.5" style="color:#8E939D">Part-Time Work Shift · 4 Hours Fixed</p></div>
-        <span class="t-label sq-pill px-2 py-1" style="background:rgba(90,95,110,.12);color:#5A5F6E">WORK</span>
-      </div>
-    </div>
-  </section>
-
-</div>
-</div><!-- /app-screen -->
-
-<!-- ════════════════════════════════════════════════════
+  <!-- ════════════════════════════════════════════════════
      MAIN JAVASCRIPT (non-module, global scope)
 ════════════════════════════════════════════════════ -->
-<script>
-'use strict';
+  <script>
+    'use strict';
 
-/* ── TASK DATASET ─────────────────────────────────────────── */
-const T={
-  "2026-11-01":{f:"Nov 01",p:1,ph:"Phase 1 · Logic Formulation",task:"Mental execution mapping & control flow mechanics | GATE Day 1 Linear Algebra: Matrices & Determinants",iv:false,at:null},
-  "2026-11-02":{f:"Nov 02",p:1,ph:"Phase 1 · Logic Formulation",task:"Variable lifecycle & memory state tracing | GATE Day 2 Linear Equations & Rank",iv:false,at:null},
-  "2026-11-03":{f:"Nov 03",p:1,ph:"Phase 1 · Logic Formulation",task:"GATE TEST — 2-Hour GATE Mathematics Assessment: Linear Algebra",iv:false,at:"gate"},
-  "2026-11-04":{f:"Nov 04",p:1,ph:"Phase 1 · Logic Formulation",task:"Branching logic trees & edge case evaluation | GATE Advanced Math Problem Solving",iv:false,at:null},
-  "2026-11-05":{f:"Nov 05",p:1,ph:"Phase 1 · Logic Formulation",task:"Conditional pseudocode execution tracing | GATE Advanced Math Problem Solving",iv:false,at:null},
-  "2026-11-06":{f:"Nov 06",p:1,ph:"Phase 1 · Logic Formulation",task:"MATH ASSESSMENT — 2-Hour Quantitative Problem Solving Test",iv:false,at:"math"},
-  "2026-11-07":{f:"Nov 07",p:1,ph:"Phase 1 · Logic Formulation",task:"LOGIC EVALUATION — 2-Hour Paper Test: Manual Code Tracing & Logic Evaluation",iv:false,at:"logic"},
-  "2026-11-08":{f:"Nov 08",p:1,ph:"Phase 1 · Logic Formulation",task:"Loop invariants & iteration mapping | GATE Day 1 Calculus: Limits & Continuity",iv:false,at:null},
-  "2026-11-09":{f:"Nov 09",p:1,ph:"Phase 1 · Logic Formulation",task:"Paper dry-running for loop state tables | GATE Day 2 Calculus: Maxima & Minima",iv:false,at:null},
-  "2026-11-10":{f:"Nov 10",p:1,ph:"Phase 1 · Logic Formulation",task:"GATE TEST — 2-Hour GATE Calculus Practice Test & PYQs",iv:false,at:"gate"},
-  "2026-11-11":{f:"Nov 11",p:1,ph:"Phase 1 · Logic Formulation",task:"Triangular coordinate patterns & space-index math | GATE Practice Calculus",iv:false,at:null},
-  "2026-11-12":{f:"Nov 12",p:1,ph:"Phase 1 · Logic Formulation",task:"Symmetric pyramid patterns & nested loop math | GATE Practice Calculus",iv:false,at:null},
-  "2026-11-13":{f:"Nov 13",p:1,ph:"Phase 1 · Logic Formulation",task:"CALCULUS TEST — 2-Hour Calculus Subject Revision & Problem Solving",iv:false,at:"math"},
-  "2026-11-14":{f:"Nov 14",p:1,ph:"Phase 1 · Logic Formulation",task:"LOGIC EVALUATION — 2-Hour Written Assessment: Unseen Pattern Pseudocode",iv:false,at:"logic"},
-  "2026-11-15":{f:"Nov 15",p:1,ph:"Phase 1 · Logic Formulation",task:"Numeric matrix pattern logic & sequence rules | GATE Day 1 Discrete Math: Sets",iv:false,at:null},
-  "2026-11-16":{f:"Nov 16",p:1,ph:"Phase 1 · Logic Formulation",task:"Multi-nested loop stack trace & index tracking | GATE Day 2 Propositional Logic",iv:false,at:null},
-  "2026-11-17":{f:"Nov 17",p:1,ph:"Phase 1 · Logic Formulation",task:"GATE TEST — 2-Hour GATE Discrete Mathematics Test",iv:false,at:"gate"},
-  "2026-11-18":{f:"Nov 18",p:1,ph:"Phase 1 · Logic Formulation",task:"Function scope, parameters & stack frame design | GATE Discrete Math Revision",iv:false,at:null},
-  "2026-11-19":{f:"Nov 19",p:1,ph:"Phase 1 · Logic Formulation",task:"Recursive base case tracing & stack unwinding | GATE Discrete Math Revision",iv:false,at:null},
-  "2026-11-20":{f:"Nov 20",p:1,ph:"Phase 1 · Logic Formulation",task:"LOGIC TEST — 2-Hour Advanced Problem Solving Assessment",iv:false,at:"logic"},
-  "2026-11-21":{f:"Nov 21",p:1,ph:"Phase 1 · Logic Formulation",task:"LOGIC EVALUATION — 2-Hour Recursion Tree & Call Stack Paper Test",iv:false,at:"logic"},
-  "2026-11-22":{f:"Nov 22",p:1,ph:"Phase 1 · Logic Formulation",task:"1D Array memory layout & index offset calculations | GATE Combinatorics",iv:false,at:null},
-  "2026-11-23":{f:"Nov 23",p:1,ph:"Phase 1 · Logic Formulation",task:"Array traversal, reversal & linear search dry-runs | GATE Probability: Bayes Theorem",iv:false,at:null},
-  "2026-11-24":{f:"Nov 24",p:1,ph:"Phase 1 · Logic Formulation",task:"GATE TEST — 2-Hour GATE Probability & Combinatorics Test",iv:false,at:"gate"},
-  "2026-11-25":{f:"Nov 25",p:1,ph:"Phase 1 · Logic Formulation",task:"Bubble & Selection sort pass-by-pass tracing | GATE Statistics Revision",iv:false,at:null},
-  "2026-11-26":{f:"Nov 26",p:1,ph:"Phase 1 · Logic Formulation",task:"ASCII string traversal & character manipulation logic | GATE Statistics Revision",iv:false,at:null},
-  "2026-11-27":{f:"Nov 27",p:1,ph:"Phase 1 · Logic Formulation",task:"REVISION TEST — 2-Hour Quantitative Aptitude Revision Test",iv:false,at:"math"},
-  "2026-11-28":{f:"Nov 28",p:1,ph:"Phase 1 · Logic Formulation",task:"LOGIC EVALUATION — 2-Hour Array & Sorting Logic Written Test",iv:false,at:"logic"},
-  "2026-11-29":{f:"Nov 29",p:1,ph:"Phase 1 · Logic Formulation",task:"Control flow & pattern consolidation sprint | GATE Mathematics PYQ Sprint",iv:false,at:null},
-  "2026-11-30":{f:"Nov 30",p:1,ph:"Phase 1 · Logic Formulation",task:"MONTHLY FULL MOCK — 3-Hour Comprehensive Evaluation: Logic + GATE Mathematics",iv:false,at:"mock"},
-  "2026-12-01":{f:"Dec 01",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"2D Matrix traversal & row-major address math | GATE Multivariable Calculus & Partial Derivatives",iv:false,at:null},
-  "2026-12-02":{f:"Dec 02",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Matrix transpose & multiplication step tracing | GATE Gradient Vectors & Jacobians",iv:false,at:null},
-  "2026-12-03":{f:"Dec 03",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"GATE TEST — 2-Hour GATE Advanced Calculus Test",iv:false,at:"gate"},
-  "2026-12-04":{f:"Dec 04",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Binary search boundaries & mid-point calculation | GATE Advanced Engineering Math",iv:false,at:null},
-  "2026-12-05":{f:"Dec 05",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Binary search decision tree trace | GATE Advanced Engineering Math",iv:false,at:null},
-  "2026-12-06":{f:"Dec 06",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"MATH TEST — 2-Hour Advanced Mathematics Assessment",iv:false,at:"math"},
-  "2026-12-07":{f:"Dec 07",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"LOGIC EVALUATION — 2-Hour Matrix & Searching Logic Written Test",iv:false,at:"logic"},
-  "2026-12-08":{f:"Dec 08",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Pointer indirection & address arithmetic | GATE Random Variables & Expectations",iv:false,at:null},
-  "2026-12-09":{f:"Dec 09",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Pointer-to-array memory layout tracing | GATE Probability Distributions",iv:false,at:null},
-  "2026-12-10":{f:"Dec 10",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"GATE TEST — 2-Hour GATE Probability Distributions Test",iv:false,at:"gate"},
-  "2026-12-11":{f:"Dec 11",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Struct memory alignment & data padding rules | GATE Statistics Review",iv:false,at:null},
-  "2026-12-12":{f:"Dec 12",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Object-oriented state models & class encapsulation | GATE Statistics Review",iv:false,at:null},
-  "2026-12-13":{f:"Dec 13",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"STATISTICS TEST — 2-Hour Statistics Theory Revision",iv:false,at:"math"},
-  "2026-12-14":{f:"Dec 14",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"LOGIC EVALUATION — 2-Hour Pointer & Struct Logic Assessment",iv:false,at:"logic"},
-  "2026-12-15":{f:"Dec 15",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Logic Review & Peak Physique Session | GATE Pre-IV Digital Logic: Combinational Circuits",iv:false,at:null},
-  "2026-12-16":{f:"Dec 16",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Logic Review & Peak Physique Session | GATE Pre-IV Digital Logic: Sequential Circuits",iv:false,at:null},
-  "2026-12-17":{f:"Dec 17",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Travel Preparation & Physique Benchmark Verification",iv:false,at:null},
-  "2026-12-18":{f:"Dec 18",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Work Shift Handover & Packing Checkpoint",iv:false,at:null},
-  "2026-12-19":{f:"Dec 19",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
-  "2026-12-20":{f:"Dec 20",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
-  "2026-12-21":{f:"Dec 21",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
-  "2026-12-22":{f:"Dec 22",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
-  "2026-12-23":{f:"Dec 23",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
-  "2026-12-24":{f:"Dec 24",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
-  "2026-12-25":{f:"Dec 25",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
-  "2026-12-26":{f:"Dec 26",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
-  "2026-12-27":{f:"Dec 27",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
-  "2026-12-28":{f:"Dec 28",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
-  "2026-12-29":{f:"Dec 29",p:2,ph:"Phase 2 · Industrial Visit",task:"Industrial Visit — Recovery, Networking & Rest",iv:true,at:null},
-  "2026-12-30":{f:"Dec 30",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Post-IV Repository & Logic Note Review — Re-entry Protocol",iv:false,at:null},
-  "2026-12-31":{f:"Dec 31",p:2,ph:"Phase 2 · Peak Physique & Pre-IV",task:"Sem 6 High-SGPA Sprint Environment Setup — Academics Launch Tomorrow",iv:false,at:null},
-  "2027-01-01":{f:"Jan 01",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Sem 6 Syllabus Mapping & Weightage Breakdown | Academic Day 1 Core Theory Deep Dive",iv:false,at:null},
-  "2027-01-02":{f:"Jan 02",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"OS: Process Control Blocks & States | Academic Day 2 Core Theory Deep Dive",iv:false,at:null},
-  "2027-01-03":{f:"Jan 03",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"ACADEMICS TEST — 2-Hour Sem 6 Theory Assessment",iv:false,at:"academic"},
-  "2027-01-04":{f:"Jan 04",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"LOGIC EVALUATION — 2-Hour OS CPU Scheduling Algorithm Paper Tracing",iv:false,at:"logic"},
-  "2027-01-05":{f:"Jan 05",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Semaphore & Mutex synchronization pseudocode | GATE OS: CPU Scheduling Algorithms",iv:false,at:null},
-  "2027-01-06":{f:"Jan 06",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Banker's Algorithm safety matrix calculation | GATE OS: Deadlocks & Synchronization",iv:false,at:null},
-  "2027-01-07":{f:"Jan 07",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"GATE TEST — 2-Hour GATE Operating Systems Mock Assessment",iv:false,at:"gate"},
-  "2027-01-08":{f:"Jan 08",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"DBMS: B-Tree index structure & node splitting | Academic Day 1 Sem 6 In-Depth Review",iv:false,at:null},
-  "2027-01-09":{f:"Jan 09",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Relational Algebra expression tree optimization | Academic Day 2 Sem 6 In-Depth Review",iv:false,at:null},
-  "2027-01-10":{f:"Jan 10",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"ACADEMICS TEST — 2-Hour Sem 6 Academic Exam Simulation",iv:false,at:"academic"},
-  "2027-01-11":{f:"Jan 11",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"LOGIC EVALUATION — 2-Hour Database Query Optimization & Relational Algebra Test",iv:false,at:"logic"},
-  "2027-01-12":{f:"Jan 12",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"DSA: BST insertion & deletion rotation tracing | GATE DSA: Trees & Binary Search Trees",iv:false,at:null},
-  "2027-01-13":{f:"Jan 13",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Graph representation & Dijkstra shortest path dry run | GATE DSA: Graph Algorithms",iv:false,at:null},
-  "2027-01-14":{f:"Jan 14",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"GATE TEST — 2-Hour GATE Data Structures & Algorithms Test",iv:false,at:"gate"},
-  "2027-01-15":{f:"Jan 15",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Computer Networks: OSI stack encapsulation flow | Academic Day 1 Mid-Semester Revision",iv:false,at:null},
-  "2027-01-16":{f:"Jan 16",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Subnet mask calculation & IP routing table lookup | Academic Day 2 Mid-Semester Revision",iv:false,at:null},
-  "2027-01-17":{f:"Jan 17",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"ACADEMICS TEST — 2-Hour SGPA Theory Written Test",iv:false,at:"academic"},
-  "2027-01-18":{f:"Jan 18",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"LOGIC EVALUATION — 2-Hour Network Routing & Subnetting Logic Test",iv:false,at:"logic"},
-  "2027-01-19":{f:"Jan 19",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"AI: State space graph heuristics | GATE Computer Networks: Protocol Headers",iv:false,at:null},
-  "2027-01-20":{f:"Jan 20",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"A* Search & Minimax game tree evaluation | GATE Networks: Flow & Error Control",iv:false,at:null},
-  "2027-01-21":{f:"Jan 21",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"GATE TEST — 2-Hour GATE Computer Networks Assessment",iv:false,at:"gate"},
-  "2027-01-22":{f:"Jan 22",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"ML: Gradient descent step updates | Academic Day 1 Sem 6 Advanced Subject Practice",iv:false,at:null},
-  "2027-01-23":{f:"Jan 23",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Decision Tree entropy & information gain math | Academic Day 2 Advanced Practice",iv:false,at:null},
-  "2027-01-24":{f:"Jan 24",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"ACADEMICS TEST — 2-Hour Academic Theory Evaluation Test",iv:false,at:"academic"},
-  "2027-01-25":{f:"Jan 25",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"LOGIC EVALUATION — 2-Hour AI/ML Mathematical Step Analysis Test",iv:false,at:"logic"},
-  "2027-01-26":{f:"Jan 26",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Sem 6 Theoretical Derivations & Formula Proofs | GATE DBMS: Normalization (1NF to BCNF)",iv:false,at:null},
-  "2027-01-27":{f:"Jan 27",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Sem 6 High-Weightage Problem Solving | GATE DBMS: ACID Properties & Serializability",iv:false,at:null},
-  "2027-01-28":{f:"Jan 28",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"GATE TEST — 2-Hour GATE DBMS Assessment",iv:false,at:"gate"},
-  "2027-01-29":{f:"Jan 29",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Sem 6 Consolidated Question Bank Review | Academic Day 1 Final SGPA Mock Preparation",iv:false,at:null},
-  "2027-01-30":{f:"Jan 30",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"Sem 6 Previous Year Question Paper Analysis | Academic Day 2 Final SGPA Mock",iv:false,at:null},
-  "2027-01-31":{f:"Jan 31",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"ACADEMICS TEST — 2-Hour Final Sem 6 SGPA Semester Mock Assessment",iv:false,at:"academic"},
-  "2027-02-01":{f:"Feb 01",p:3,ph:"Phase 3 · Sem 6 Acceleration",task:"MILESTONE EVALUATION — 3-Hour Comprehensive Evaluation: Sem 6 Academics + GATE",iv:false,at:"mock"}
-};
-
-/* ── DESIGN TOKENS ────────────────────────────────────────── */
-const PA={
-  1:{color:'#2B56F5',bg:'rgba(43,86,245,.1)',  bar:'#2B56F5'},
-  2:{color:'#1DB87A',bg:'rgba(29,184,122,.1)', bar:'#1DB87A'},
-  3:{color:'#7C4DFF',bg:'rgba(124,77,255,.1)', bar:'#7C4DFF'},
-};
-const AM={
-  gate:    {color:'#2B56F5',bg:'rgba(43,86,245,.1)', label:'GATE TEST'},
-  math:    {color:'#F5A623',bg:'rgba(245,166,35,.1)',label:'MATH TEST'},
-  logic:   {color:'#7C4DFF',bg:'rgba(124,77,255,.1)',label:'LOGIC EVAL'},
-  academic:{color:'#1DB87A',bg:'rgba(29,184,122,.1)',label:'ACADEMIC TEST'},
-  mock:    {color:'#F53B57',bg:'rgba(245,59,87,.1)', label:'FULL MOCK'},
-};
-const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const WDF=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-
-/* ── LOCAL STATE ──────────────────────────────────────────── */
-const LS_KEY='execution_tracker_data';
-let S={};
-try{ S=JSON.parse(localStorage.getItem(LS_KEY))||{}; }catch(e){}
-if(!S.theme)  S.theme='dark';
-if(!S.checks) S.checks={};
-
-let saveTid=null;
-function clamp(d){ return d<'2026-11-01'?'2026-11-01':d>'2027-02-01'?'2027-02-01':d; }
-let cur=clamp(new Date().toISOString().split('T')[0]);
-
-/* ── THEME ────────────────────────────────────────────────── */
-function applyTheme(){
-  const dark=S.theme==='dark';
-  document.documentElement.classList.toggle('dark',dark);
-  const body=document.getElementById('body-root');
-  body.style.backgroundColor=dark?'#0C0D12':'#F4F5F8';
-  body.style.color=dark?'#FFFFFF':'#111214';
-  document.querySelectorAll('.card').forEach(el=>el.style.backgroundColor=dark?'#17181F':'#FFFFFF');
-  document.querySelectorAll('.lift').forEach(el=>el.style.backgroundColor=dark?'#1E202A':'#F0F1F5');
-  document.querySelectorAll('.rim').forEach(el=>el.style.backgroundColor=dark?'#2A2C38':'#E3E5EC');
-  document.querySelectorAll('.sep').forEach(el=>el.style.background=dark?'#2A2C38':'#E3E5EC');
-  const sg=document.getElementById('stat-grid'); if(sg) sg.style.background=dark?'#2A2C38':'#E3E5EC';
-  ['prev-btn','next-btn'].forEach(id=>{ const b=document.getElementById(id); if(b){b.style.backgroundColor=dark?'#1E202A':'#F0F1F5';b.style.color=dark?'#8E939D':'#686D76';} });
-  const dp=document.getElementById('date-picker'); if(dp){dp.style.backgroundColor=dark?'#1E202A':'#F0F1F5';dp.style.color=dark?'#FFFFFF':'#111214';}
-  const tb=document.getElementById('theme-btn'); if(tb){tb.style.backgroundColor=dark?'#17181F':'#FFFFFF';tb.style.color=dark?'#8E939D':'#686D76';}
-  document.getElementById('theme-lbl').textContent=dark?'Dark':'Light';
-  document.querySelectorAll('.ring-track').forEach(c=>c.style.stroke=dark?'#2A2C38':'#E3E5EC');
-  document.querySelectorAll('.inp').forEach(el=>{ el.style.backgroundColor=dark?'#1E202A':'#F0F1F5'; el.style.color=dark?'#FFFFFF':'#111214'; });
-  const ac=document.getElementById('auth-card'); if(ac) ac.style.backgroundColor=dark?'#17181F':'#FFFFFF';
-  const as=document.getElementById('auth-screen'); if(as) as.style.backgroundColor=dark?'#0C0D12':'#F4F5F8';
-}
-function toggleTheme(){
-  S.theme=S.theme==='dark'?'light':'dark';
-  applyTheme();
-  commitState();
-}
-applyTheme();
-
-/* ── SAVE & SYNC INDICATORS ───────────────────────────────── */
-function showSaveDot(){
-  const el=document.getElementById('save-dot'); if(!el) return;
-  el.style.opacity='1'; clearTimeout(saveTid); saveTid=setTimeout(()=>el.style.opacity='0',2000);
-}
-function showSyncPulse(){
-  const el=document.getElementById('sync-pulse'); if(!el) return;
-  el.style.opacity='1'; setTimeout(()=>el.style.opacity='0',2500);
-}
-
-/* ── LOCAL COMMIT + CLOUD SAVE ────────────────────────────── */
-function commitState(){
-  localStorage.setItem(LS_KEY,JSON.stringify(S));
-  showSaveDot();
-  if(window.__cloudSave) window.__cloudSave();
-}
-
-function resetData(){
-  if(!confirm('Clear all tracked progress across all devices? This cannot be undone.')) return;
-  S.checks={};
-  commitState();
-  render();
-}
-
-/* ── AUTH SCREEN LOGIC ────────────────────────────────────── */
-let authMode='login';
-
-function switchTab(mode){
-  authMode=mode;
-  const isLogin=(mode==='login');
-  document.getElementById('auth-confirm').style.display=isLogin?'none':'block';
-  document.getElementById('auth-submit-label').textContent=isLogin?'Sign In':'Create Account';
-  document.getElementById('auth-error').style.display='none';
-  document.getElementById('tab-login').style.background=isLogin?'#2B56F5':'transparent';
-  document.getElementById('tab-login').style.color=isLogin?'#FFF':'#8E939D';
-  document.getElementById('tab-signup').style.background=!isLogin?'#2B56F5':'transparent';
-  document.getElementById('tab-signup').style.color=!isLogin?'#FFF':'#8E939D';
-}
-
-function setAuthLoading(on){
-  document.getElementById('auth-spinner').style.display=on?'flex':'none';
-  document.getElementById('auth-submit-label').style.display=on?'none':'inline';
-  document.getElementById('auth-submit-btn').disabled=on;
-  document.getElementById('google-btn').disabled=on;
-}
-
-function showAuthError(msg){
-  const el=document.getElementById('auth-error');
-  el.textContent=msg; el.style.display='block';
-}
-
-async function handleEmailAuth(){
-  const fb=window.__fb;
-  if(!fb){ handleOfflineMode(); return; }
-  const email=document.getElementById('auth-email').value.trim();
-  const pass=document.getElementById('auth-password').value;
-  const confirm=document.getElementById('auth-confirm').value;
-  if(!email||!pass){ showAuthError('Please enter email and password.'); return; }
-  if(authMode==='signup'&&pass!==confirm){ showAuthError('Passwords do not match.'); return; }
-  if(authMode==='signup'&&pass.length<6){ showAuthError('Password must be at least 6 characters.'); return; }
-  setAuthLoading(true);
-  try{
-    if(authMode==='login'){
-      await fb.signInWithEmailAndPassword(fb.auth, email, pass);
-    } else {
-      await fb.createUserWithEmailAndPassword(fb.auth, email, pass);
-    }
-    /* onAuthStateChanged fires → showApp() called automatically */
-  } catch(e){
-    const MSG={
-      'auth/user-not-found':'No account with that email.',
-      'auth/wrong-password':'Incorrect password.',
-      'auth/email-already-in-use':'An account with that email already exists.',
-      'auth/invalid-email':'Please enter a valid email.',
-      'auth/too-many-requests':'Too many attempts. Try again later.',
-      'auth/invalid-credential':'Invalid email or password.',
+    /* ── TASK DATASET ─────────────────────────────────────────── */
+    const T = {
+      "2026-11-01": { f: "Nov 01", p: 1, ph: "Phase 1 · Logic Formulation", task: "Mental execution mapping & control flow mechanics | GATE Day 1 Linear Algebra: Matrices & Determinants", iv: false, at: null },
+      "2026-11-02": { f: "Nov 02", p: 1, ph: "Phase 1 · Logic Formulation", task: "Variable lifecycle & memory state tracing | GATE Day 2 Linear Equations & Rank", iv: false, at: null },
+      "2026-11-03": { f: "Nov 03", p: 1, ph: "Phase 1 · Logic Formulation", task: "GATE TEST — 2-Hour GATE Mathematics Assessment: Linear Algebra", iv: false, at: "gate" },
+      "2026-11-04": { f: "Nov 04", p: 1, ph: "Phase 1 · Logic Formulation", task: "Branching logic trees & edge case evaluation | GATE Advanced Math Problem Solving", iv: false, at: null },
+      "2026-11-05": { f: "Nov 05", p: 1, ph: "Phase 1 · Logic Formulation", task: "Conditional pseudocode execution tracing | GATE Advanced Math Problem Solving", iv: false, at: null },
+      "2026-11-06": { f: "Nov 06", p: 1, ph: "Phase 1 · Logic Formulation", task: "MATH ASSESSMENT — 2-Hour Quantitative Problem Solving Test", iv: false, at: "math" },
+      "2026-11-07": { f: "Nov 07", p: 1, ph: "Phase 1 · Logic Formulation", task: "LOGIC EVALUATION — 2-Hour Paper Test: Manual Code Tracing & Logic Evaluation", iv: false, at: "logic" },
+      "2026-11-08": { f: "Nov 08", p: 1, ph: "Phase 1 · Logic Formulation", task: "Loop invariants & iteration mapping | GATE Day 1 Calculus: Limits & Continuity", iv: false, at: null },
+      "2026-11-09": { f: "Nov 09", p: 1, ph: "Phase 1 · Logic Formulation", task: "Paper dry-running for loop state tables | GATE Day 2 Calculus: Maxima & Minima", iv: false, at: null },
+      "2026-11-10": { f: "Nov 10", p: 1, ph: "Phase 1 · Logic Formulation", task: "GATE TEST — 2-Hour GATE Calculus Practice Test & PYQs", iv: false, at: "gate" },
+      "2026-11-11": { f: "Nov 11", p: 1, ph: "Phase 1 · Logic Formulation", task: "Triangular coordinate patterns & space-index math | GATE Practice Calculus", iv: false, at: null },
+      "2026-11-12": { f: "Nov 12", p: 1, ph: "Phase 1 · Logic Formulation", task: "Symmetric pyramid patterns & nested loop math | GATE Practice Calculus", iv: false, at: null },
+      "2026-11-13": { f: "Nov 13", p: 1, ph: "Phase 1 · Logic Formulation", task: "CALCULUS TEST — 2-Hour Calculus Subject Revision & Problem Solving", iv: false, at: "math" },
+      "2026-11-14": { f: "Nov 14", p: 1, ph: "Phase 1 · Logic Formulation", task: "LOGIC EVALUATION — 2-Hour Written Assessment: Unseen Pattern Pseudocode", iv: false, at: "logic" },
+      "2026-11-15": { f: "Nov 15", p: 1, ph: "Phase 1 · Logic Formulation", task: "Numeric matrix pattern logic & sequence rules | GATE Day 1 Discrete Math: Sets", iv: false, at: null },
+      "2026-11-16": { f: "Nov 16", p: 1, ph: "Phase 1 · Logic Formulation", task: "Multi-nested loop stack trace & index tracking | GATE Day 2 Propositional Logic", iv: false, at: null },
+      "2026-11-17": { f: "Nov 17", p: 1, ph: "Phase 1 · Logic Formulation", task: "GATE TEST — 2-Hour GATE Discrete Mathematics Test", iv: false, at: "gate" },
+      "2026-11-18": { f: "Nov 18", p: 1, ph: "Phase 1 · Logic Formulation", task: "Function scope, parameters & stack frame design | GATE Discrete Math Revision", iv: false, at: null },
+      "2026-11-19": { f: "Nov 19", p: 1, ph: "Phase 1 · Logic Formulation", task: "Recursive base case tracing & stack unwinding | GATE Discrete Math Revision", iv: false, at: null },
+      "2026-11-20": { f: "Nov 20", p: 1, ph: "Phase 1 · Logic Formulation", task: "LOGIC TEST — 2-Hour Advanced Problem Solving Assessment", iv: false, at: "logic" },
+      "2026-11-21": { f: "Nov 21", p: 1, ph: "Phase 1 · Logic Formulation", task: "LOGIC EVALUATION — 2-Hour Recursion Tree & Call Stack Paper Test", iv: false, at: "logic" },
+      "2026-11-22": { f: "Nov 22", p: 1, ph: "Phase 1 · Logic Formulation", task: "1D Array memory layout & index offset calculations | GATE Combinatorics", iv: false, at: null },
+      "2026-11-23": { f: "Nov 23", p: 1, ph: "Phase 1 · Logic Formulation", task: "Array traversal, reversal & linear search dry-runs | GATE Probability: Bayes Theorem", iv: false, at: null },
+      "2026-11-24": { f: "Nov 24", p: 1, ph: "Phase 1 · Logic Formulation", task: "GATE TEST — 2-Hour GATE Probability & Combinatorics Test", iv: false, at: "gate" },
+      "2026-11-25": { f: "Nov 25", p: 1, ph: "Phase 1 · Logic Formulation", task: "Bubble & Selection sort pass-by-pass tracing | GATE Statistics Revision", iv: false, at: null },
+      "2026-11-26": { f: "Nov 26", p: 1, ph: "Phase 1 · Logic Formulation", task: "ASCII string traversal & character manipulation logic | GATE Statistics Revision", iv: false, at: null },
+      "2026-11-27": { f: "Nov 27", p: 1, ph: "Phase 1 · Logic Formulation", task: "REVISION TEST — 2-Hour Quantitative Aptitude Revision Test", iv: false, at: "math" },
+      "2026-11-28": { f: "Nov 28", p: 1, ph: "Phase 1 · Logic Formulation", task: "LOGIC EVALUATION — 2-Hour Array & Sorting Logic Written Test", iv: false, at: "logic" },
+      "2026-11-29": { f: "Nov 29", p: 1, ph: "Phase 1 · Logic Formulation", task: "Control flow & pattern consolidation sprint | GATE Mathematics PYQ Sprint", iv: false, at: null },
+      "2026-11-30": { f: "Nov 30", p: 1, ph: "Phase 1 · Logic Formulation", task: "MONTHLY FULL MOCK — 3-Hour Comprehensive Evaluation: Logic + GATE Mathematics", iv: false, at: "mock" },
+      "2026-12-01": { f: "Dec 01", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "2D Matrix traversal & row-major address math | GATE Multivariable Calculus & Partial Derivatives", iv: false, at: null },
+      "2026-12-02": { f: "Dec 02", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "Matrix transpose & multiplication step tracing | GATE Gradient Vectors & Jacobians", iv: false, at: null },
+      "2026-12-03": { f: "Dec 03", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "GATE TEST — 2-Hour GATE Advanced Calculus Test", iv: false, at: "gate" },
+      "2026-12-04": { f: "Dec 04", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "Binary search boundaries & mid-point calculation | GATE Advanced Engineering Math", iv: false, at: null },
+      "2026-12-05": { f: "Dec 05", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "Binary search decision tree trace | GATE Advanced Engineering Math", iv: false, at: null },
+      "2026-12-06": { f: "Dec 06", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "MATH TEST — 2-Hour Advanced Mathematics Assessment", iv: false, at: "math" },
+      "2026-12-07": { f: "Dec 07", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "LOGIC EVALUATION — 2-Hour Matrix & Searching Logic Written Test", iv: false, at: "logic" },
+      "2026-12-08": { f: "Dec 08", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "Pointer indirection & address arithmetic | GATE Random Variables & Expectations", iv: false, at: null },
+      "2026-12-09": { f: "Dec 09", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "Pointer-to-array memory layout tracing | GATE Probability Distributions", iv: false, at: null },
+      "2026-12-10": { f: "Dec 10", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "GATE TEST — 2-Hour GATE Probability Distributions Test", iv: false, at: "gate" },
+      "2026-12-11": { f: "Dec 11", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "Struct memory alignment & data padding rules | GATE Statistics Review", iv: false, at: null },
+      "2026-12-12": { f: "Dec 12", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "Object-oriented state models & class encapsulation | GATE Statistics Review", iv: false, at: null },
+      "2026-12-13": { f: "Dec 13", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "STATISTICS TEST — 2-Hour Statistics Theory Revision", iv: false, at: "math" },
+      "2026-12-14": { f: "Dec 14", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "LOGIC EVALUATION — 2-Hour Pointer & Struct Logic Assessment", iv: false, at: "logic" },
+      "2026-12-15": { f: "Dec 15", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "Logic Review & Peak Physique Session | GATE Pre-IV Digital Logic: Combinational Circuits", iv: false, at: null },
+      "2026-12-16": { f: "Dec 16", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "Logic Review & Peak Physique Session | GATE Pre-IV Digital Logic: Sequential Circuits", iv: false, at: null },
+      "2026-12-17": { f: "Dec 17", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "Travel Preparation & Physique Benchmark Verification", iv: false, at: null },
+      "2026-12-18": { f: "Dec 18", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "Work Shift Handover & Packing Checkpoint", iv: false, at: null },
+      "2026-12-19": { f: "Dec 19", p: 2, ph: "Phase 2 · Industrial Visit", task: "Industrial Visit — Recovery, Networking & Rest", iv: true, at: null },
+      "2026-12-20": { f: "Dec 20", p: 2, ph: "Phase 2 · Industrial Visit", task: "Industrial Visit — Recovery, Networking & Rest", iv: true, at: null },
+      "2026-12-21": { f: "Dec 21", p: 2, ph: "Phase 2 · Industrial Visit", task: "Industrial Visit — Recovery, Networking & Rest", iv: true, at: null },
+      "2026-12-22": { f: "Dec 22", p: 2, ph: "Phase 2 · Industrial Visit", task: "Industrial Visit — Recovery, Networking & Rest", iv: true, at: null },
+      "2026-12-23": { f: "Dec 23", p: 2, ph: "Phase 2 · Industrial Visit", task: "Industrial Visit — Recovery, Networking & Rest", iv: true, at: null },
+      "2026-12-24": { f: "Dec 24", p: 2, ph: "Phase 2 · Industrial Visit", task: "Industrial Visit — Recovery, Networking & Rest", iv: true, at: null },
+      "2026-12-25": { f: "Dec 25", p: 2, ph: "Phase 2 · Industrial Visit", task: "Industrial Visit — Recovery, Networking & Rest", iv: true, at: null },
+      "2026-12-26": { f: "Dec 26", p: 2, ph: "Phase 2 · Industrial Visit", task: "Industrial Visit — Recovery, Networking & Rest", iv: true, at: null },
+      "2026-12-27": { f: "Dec 27", p: 2, ph: "Phase 2 · Industrial Visit", task: "Industrial Visit — Recovery, Networking & Rest", iv: true, at: null },
+      "2026-12-28": { f: "Dec 28", p: 2, ph: "Phase 2 · Industrial Visit", task: "Industrial Visit — Recovery, Networking & Rest", iv: true, at: null },
+      "2026-12-29": { f: "Dec 29", p: 2, ph: "Phase 2 · Industrial Visit", task: "Industrial Visit — Recovery, Networking & Rest", iv: true, at: null },
+      "2026-12-30": { f: "Dec 30", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "Post-IV Repository & Logic Note Review — Re-entry Protocol", iv: false, at: null },
+      "2026-12-31": { f: "Dec 31", p: 2, ph: "Phase 2 · Peak Physique & Pre-IV", task: "Sem 6 High-SGPA Sprint Environment Setup — Academics Launch Tomorrow", iv: false, at: null },
+      "2027-01-01": { f: "Jan 01", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "Sem 6 Syllabus Mapping & Weightage Breakdown | Academic Day 1 Core Theory Deep Dive", iv: false, at: null },
+      "2027-01-02": { f: "Jan 02", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "OS: Process Control Blocks & States | Academic Day 2 Core Theory Deep Dive", iv: false, at: null },
+      "2027-01-03": { f: "Jan 03", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "ACADEMICS TEST — 2-Hour Sem 6 Theory Assessment", iv: false, at: "academic" },
+      "2027-01-04": { f: "Jan 04", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "LOGIC EVALUATION — 2-Hour OS CPU Scheduling Algorithm Paper Tracing", iv: false, at: "logic" },
+      "2027-01-05": { f: "Jan 05", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "Semaphore & Mutex synchronization pseudocode | GATE OS: CPU Scheduling Algorithms", iv: false, at: null },
+      "2027-01-06": { f: "Jan 06", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "Banker's Algorithm safety matrix calculation | GATE OS: Deadlocks & Synchronization", iv: false, at: null },
+      "2027-01-07": { f: "Jan 07", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "GATE TEST — 2-Hour GATE Operating Systems Mock Assessment", iv: false, at: "gate" },
+      "2027-01-08": { f: "Jan 08", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "DBMS: B-Tree index structure & node splitting | Academic Day 1 Sem 6 In-Depth Review", iv: false, at: null },
+      "2027-01-09": { f: "Jan 09", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "Relational Algebra expression tree optimization | Academic Day 2 Sem 6 In-Depth Review", iv: false, at: null },
+      "2027-01-10": { f: "Jan 10", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "ACADEMICS TEST — 2-Hour Sem 6 Academic Exam Simulation", iv: false, at: "academic" },
+      "2027-01-11": { f: "Jan 11", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "LOGIC EVALUATION — 2-Hour Database Query Optimization & Relational Algebra Test", iv: false, at: "logic" },
+      "2027-01-12": { f: "Jan 12", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "DSA: BST insertion & deletion rotation tracing | GATE DSA: Trees & Binary Search Trees", iv: false, at: null },
+      "2027-01-13": { f: "Jan 13", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "Graph representation & Dijkstra shortest path dry run | GATE DSA: Graph Algorithms", iv: false, at: null },
+      "2027-01-14": { f: "Jan 14", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "GATE TEST — 2-Hour GATE Data Structures & Algorithms Test", iv: false, at: "gate" },
+      "2027-01-15": { f: "Jan 15", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "Computer Networks: OSI stack encapsulation flow | Academic Day 1 Mid-Semester Revision", iv: false, at: null },
+      "2027-01-16": { f: "Jan 16", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "Subnet mask calculation & IP routing table lookup | Academic Day 2 Mid-Semester Revision", iv: false, at: null },
+      "2027-01-17": { f: "Jan 17", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "ACADEMICS TEST — 2-Hour SGPA Theory Written Test", iv: false, at: "academic" },
+      "2027-01-18": { f: "Jan 18", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "LOGIC EVALUATION — 2-Hour Network Routing & Subnetting Logic Test", iv: false, at: "logic" },
+      "2027-01-19": { f: "Jan 19", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "AI: State space graph heuristics | GATE Computer Networks: Protocol Headers", iv: false, at: null },
+      "2027-01-20": { f: "Jan 20", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "A* Search & Minimax game tree evaluation | GATE Networks: Flow & Error Control", iv: false, at: null },
+      "2027-01-21": { f: "Jan 21", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "GATE TEST — 2-Hour GATE Computer Networks Assessment", iv: false, at: "gate" },
+      "2027-01-22": { f: "Jan 22", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "ML: Gradient descent step updates | Academic Day 1 Sem 6 Advanced Subject Practice", iv: false, at: null },
+      "2027-01-23": { f: "Jan 23", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "Decision Tree entropy & information gain math | Academic Day 2 Advanced Practice", iv: false, at: null },
+      "2027-01-24": { f: "Jan 24", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "ACADEMICS TEST — 2-Hour Academic Theory Evaluation Test", iv: false, at: "academic" },
+      "2027-01-25": { f: "Jan 25", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "LOGIC EVALUATION — 2-Hour AI/ML Mathematical Step Analysis Test", iv: false, at: "logic" },
+      "2027-01-26": { f: "Jan 26", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "Sem 6 Theoretical Derivations & Formula Proofs | GATE DBMS: Normalization (1NF to BCNF)", iv: false, at: null },
+      "2027-01-27": { f: "Jan 27", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "Sem 6 High-Weightage Problem Solving | GATE DBMS: ACID Properties & Serializability", iv: false, at: null },
+      "2027-01-28": { f: "Jan 28", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "GATE TEST — 2-Hour GATE DBMS Assessment", iv: false, at: "gate" },
+      "2027-01-29": { f: "Jan 29", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "Sem 6 Consolidated Question Bank Review | Academic Day 1 Final SGPA Mock Preparation", iv: false, at: null },
+      "2027-01-30": { f: "Jan 30", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "Sem 6 Previous Year Question Paper Analysis | Academic Day 2 Final SGPA Mock", iv: false, at: null },
+      "2027-01-31": { f: "Jan 31", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "ACADEMICS TEST — 2-Hour Final Sem 6 SGPA Semester Mock Assessment", iv: false, at: "academic" },
+      "2027-02-01": { f: "Feb 01", p: 3, ph: "Phase 3 · Sem 6 Acceleration", task: "MILESTONE EVALUATION — 3-Hour Comprehensive Evaluation: Sem 6 Academics + GATE", iv: false, at: "mock" }
     };
-    showAuthError(MSG[e.code]||('Error: '+e.message));
-  } finally { setAuthLoading(false); }
-}
 
-async function handleGoogleAuth(){
-  const fb=window.__fb;
-  if(!fb){ handleOfflineMode(); return; }
-  setAuthLoading(true);
-  try {
-    await fb.signInWithPopup(fb.auth, fb.gProvider);
-  } catch(e){
-    if(e.code!=='auth/popup-closed-by-user') showAuthError('Google sign-in failed: '+e.message);
-  } finally { setAuthLoading(false); }
-}
+    /* ── DESIGN TOKENS ────────────────────────────────────────── */
+    const PA = {
+      1: { color: '#2B56F5', bg: 'rgba(43,86,245,.1)', bar: '#2B56F5' },
+      2: { color: '#1DB87A', bg: 'rgba(29,184,122,.1)', bar: '#1DB87A' },
+      3: { color: '#7C4DFF', bg: 'rgba(124,77,255,.1)', bar: '#7C4DFF' },
+    };
+    const AM = {
+      gate: { color: '#2B56F5', bg: 'rgba(43,86,245,.1)', label: 'GATE TEST' },
+      math: { color: '#F5A623', bg: 'rgba(245,166,35,.1)', label: 'MATH TEST' },
+      logic: { color: '#7C4DFF', bg: 'rgba(124,77,255,.1)', label: 'LOGIC EVAL' },
+      academic: { color: '#1DB87A', bg: 'rgba(29,184,122,.1)', label: 'ACADEMIC TEST' },
+      mock: { color: '#F53B57', bg: 'rgba(245,59,87,.1)', label: 'FULL MOCK' },
+    };
+    const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const WDF = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-async function handleSignOut(){
-  const fb=window.__fb;
-  if(fb){ try{ await fb.signOut(fb.auth); }catch(e){} }
-  showLogin();
-}
+    /* ── LOCAL STATE ──────────────────────────────────────────── */
+    const LS_KEY = 'execution_tracker_data';
+    let S = {};
+    try { S = JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch (e) { }
+    if (!S.theme) S.theme = 'dark';
+    if (!S.checks) S.checks = {};
 
-function handleOfflineMode(){
-  /* Firebase not configured — check if placeholder config */
-  const warn=document.getElementById('config-warning');
-  if(warn) warn.style.display='block';
-  /* Still allow usage in offline/local mode */
-  showApp(null);
-  render();
-}
+    let saveTid = null;
+    function clamp(d) { return d < '2026-11-01' ? '2026-11-01' : d > '2027-02-01' ? '2027-02-01' : d; }
+    let cur = clamp(new Date().toISOString().split('T')[0]);
 
-function showLogin(){
-  document.getElementById('auth-screen').style.display='flex';
-  document.getElementById('app-screen').style.display='none';
-  applyTheme();
-}
-
-function showApp(user){
-  document.getElementById('auth-screen').style.display='none';
-  document.getElementById('app-screen').style.display='block';
-  if(user){
-    const initials=(user.displayName||user.email||'U').charAt(0).toUpperCase();
-    document.getElementById('user-avatar').textContent=initials;
-    const name=user.displayName||user.email||'User';
-    document.getElementById('user-name').textContent=name;
-    /* Photo URL for Google users */
-    if(user.photoURL){
-      document.getElementById('user-avatar').innerHTML=`<img src="${user.photoURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover" alt="avatar"/>`;
+    /* ── THEME ────────────────────────────────────────────────── */
+    function applyTheme() {
+      const dark = S.theme === 'dark';
+      document.documentElement.classList.toggle('dark', dark);
+      const body = document.getElementById('body-root');
+      body.style.backgroundColor = dark ? '#0C0D12' : '#F4F5F8';
+      body.style.color = dark ? '#FFFFFF' : '#111214';
+      document.querySelectorAll('.card').forEach(el => el.style.backgroundColor = dark ? '#17181F' : '#FFFFFF');
+      document.querySelectorAll('.lift').forEach(el => el.style.backgroundColor = dark ? '#1E202A' : '#F0F1F5');
+      document.querySelectorAll('.rim').forEach(el => el.style.backgroundColor = dark ? '#2A2C38' : '#E3E5EC');
+      document.querySelectorAll('.sep').forEach(el => el.style.background = dark ? '#2A2C38' : '#E3E5EC');
+      const sg = document.getElementById('stat-grid'); if (sg) sg.style.background = dark ? '#2A2C38' : '#E3E5EC';
+      ['prev-btn', 'next-btn'].forEach(id => { const b = document.getElementById(id); if (b) { b.style.backgroundColor = dark ? '#1E202A' : '#F0F1F5'; b.style.color = dark ? '#8E939D' : '#686D76'; } });
+      const dp = document.getElementById('date-picker'); if (dp) { dp.style.backgroundColor = dark ? '#1E202A' : '#F0F1F5'; dp.style.color = dark ? '#FFFFFF' : '#111214'; }
+      const tb = document.getElementById('theme-btn'); if (tb) { tb.style.backgroundColor = dark ? '#17181F' : '#FFFFFF'; tb.style.color = dark ? '#8E939D' : '#686D76'; }
+      document.getElementById('theme-lbl').textContent = dark ? 'Dark' : 'Light';
+      document.querySelectorAll('.ring-track').forEach(c => c.style.stroke = dark ? '#2A2C38' : '#E3E5EC');
+      document.querySelectorAll('.inp').forEach(el => { el.style.backgroundColor = dark ? '#1E202A' : '#F0F1F5'; el.style.color = dark ? '#FFFFFF' : '#111214'; });
+      const ac = document.getElementById('auth-card'); if (ac) ac.style.backgroundColor = dark ? '#17181F' : '#FFFFFF';
+      const as = document.getElementById('auth-screen'); if (as) as.style.backgroundColor = dark ? '#0C0D12' : '#F4F5F8';
     }
-  }
-  document.getElementById('date-picker').value=cur;
-  applyTheme();
-  render();
-}
-
-/* ── Check if Firebase config is placeholder → offline mode ─ */
-window.addEventListener('load',()=>{
-  setTimeout(()=>{
-    /* If module script failed silently (bad config keys) show warning */
-    if(!window.__fb){
-      document.getElementById('config-warning').style.display='block';
+    function toggleTheme() {
+      S.theme = S.theme === 'dark' ? 'light' : 'dark';
+      applyTheme();
+      commitState();
     }
-  },1500);
-});
+    applyTheme();
 
-/* ── NAV ──────────────────────────────────────────────────── */
-function onDatePicked(v){ cur=clamp(v); document.getElementById('date-picker').value=cur; render(); }
-function changeDay(off){
-  const d=new Date(cur+'T00:00:00'); d.setDate(d.getDate()+off);
-  const n=d.toISOString().split('T')[0];
-  if(n>='2026-11-01'&&n<='2027-02-01'){cur=n;document.getElementById('date-picker').value=cur;render();}
-}
-function goToToday(){ cur=clamp(new Date().toISOString().split('T')[0]); document.getElementById('date-picker').value=cur; render(); }
+    /* ── SAVE & SYNC INDICATORS ───────────────────────────────── */
+    function showSaveDot() {
+      const el = document.getElementById('save-dot'); if (!el) return;
+      el.style.opacity = '1'; clearTimeout(saveTid); saveTid = setTimeout(() => el.style.opacity = '0', 2000);
+    }
+    function showSyncPulse() {
+      const el = document.getElementById('sync-pulse'); if (!el) return;
+      el.style.opacity = '1'; setTimeout(() => el.style.opacity = '0', 2500);
+    }
 
-/* ── CHECKBOX TOGGLE ──────────────────────────────────────── */
-function toggleCheck(k){
-  if(!S.checks[cur]) S.checks[cur]={};
-  S.checks[cur][k]=!S.checks[cur][k];
-  commitState();
-  renderChecks(); renderStats(); renderHeroTask();
-}
+    /* ── LOCAL COMMIT + CLOUD SAVE ────────────────────────────── */
+    function commitState() {
+      localStorage.setItem(LS_KEY, JSON.stringify(S));
+      showSaveDot();
+      if (window.__cloudSave) window.__cloudSave();
+    }
 
-/* ── BOX DEFS ─────────────────────────────────────────────── */
-const BB=[
-  {id:'c1',label:'Coding / Logic',  sub:'Mind-Dependent Logic & Pseudocode'},
-  {id:'c2',label:'GATE Prep',       sub:'Math · PYQs · Subject Tests'},
-  {id:'c3',label:'Physique Sprint', sub:'Peak Fitness & Body Composition'},
-];
-const SB={id:'c4',label:'Sem 6 Academics',sub:'8.5+ SGPA Focus'};
+    function resetData() {
+      if (!confirm('Clear all tracked progress across all devices? This cannot be undone.')) return;
+      S.checks = {};
+      commitState();
+      render();
+    }
 
-/* ── RENDER HERO ──────────────────────────────────────────── */
-function renderHero(){
-  const info=T[cur]; if(!info) return;
-  const acc=PA[info.p]||PA[1];
-  const d=new Date(cur+'T00:00:00');
-  document.getElementById('hero-phase-label').textContent=info.ph;
-  document.getElementById('hero-phase-label').style.color=acc.color;
-  document.getElementById('hero-date-display').innerHTML=info.f+'&thinsp;<span style="font-weight:300;color:#8E939D">'+WDF[d.getDay()]+'</span>';
-  renderHeroTask();
-}
-function renderHeroTask(){
-  const info=T[cur]; if(!info) return;
-  const total=bCount(cur), checks=S.checks[cur]||{};
-  let done=0; for(let i=1;i<=total;i++) if(checks['c'+i]) done++;
-  const pct=Math.round((done/total)*100);
-  document.getElementById('hero-task-preview').textContent=
-    pct===100?'All tasks complete for this day.':info.task.split('|')[0].trim();
-}
+    /* ── AUTH SCREEN LOGIC ────────────────────────────────────── */
+    let authMode = 'login';
 
-/* ── RENDER BADGES ────────────────────────────────────────── */
-function renderBadges(){
-  const info=T[cur]; if(!info) return;
-  const acc=PA[info.p]||PA[1];
-  const ab=info.at?AM[info.at]:null;
-  const dark=S.theme==='dark';
-  const di=Math.round((new Date(cur+'T00:00:00')-new Date('2026-11-01T00:00:00'))/864e5)+1;
-  const mkPill=(txt,clr,bg)=>`<span style="display:inline-flex;align-items:center;padding:0 14px;height:36px;border-radius:999px;background:${bg};color:${clr};font-size:.6rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;white-space:nowrap">${txt}</span>`;
-  let h='';
-  h+=mkPill(info.ph,acc.color,acc.bg);
-  if(ab) h+=mkPill(ab.label,ab.color,ab.bg);
-  if(info.iv) h+=mkPill('Industrial Visit','#F5A623','rgba(245,166,35,.1)');
-  h+=mkPill('Day '+di+' of 93','#8E939D',dark?'rgba(142,147,157,.08)':'rgba(102,109,118,.07)');
-  document.getElementById('badge-track').innerHTML=h;
-}
+    function switchTab(mode) {
+      authMode = mode;
+      const isLogin = (mode === 'login');
+      document.getElementById('auth-confirm').style.display = isLogin ? 'none' : 'block';
+      document.getElementById('auth-submit-label').textContent = isLogin ? 'Sign In' : 'Create Account';
+      document.getElementById('auth-error').style.display = 'none';
+      document.getElementById('tab-login').style.background = isLogin ? '#2B56F5' : 'transparent';
+      document.getElementById('tab-login').style.color = isLogin ? '#FFF' : '#8E939D';
+      document.getElementById('tab-signup').style.background = !isLogin ? '#2B56F5' : 'transparent';
+      document.getElementById('tab-signup').style.color = !isLogin ? '#FFF' : '#8E939D';
+    }
 
-/* ── RENDER TASK BLOCK ────────────────────────────────────── */
-function renderTaskBlock(){
-  const info=T[cur]; if(!info) return;
-  const dark=S.theme==='dark';
-  const liftBg=dark?'#1E202A':'#F0F1F5';
-  const ivBg=dark?'rgba(245,166,35,.05)':'rgba(245,166,35,.07)';
-  const parts=info.task.split('|').map(s=>s.trim());
-  let h=`<div style="padding:20px 22px">`;
-  h+=`<p class="t-label" style="color:${info.iv?'#F5A623':'#8E939D'};margin-bottom:10px">${info.iv?'INDUSTRIAL VISIT PROTOCOL':'SCHEDULED FOCUS'}</p>`;
-  parts.forEach((pt,i)=>{
-    h+=`<div style="background:${info.iv?ivBg:liftBg};border-radius:14px;padding:13px 15px;${i>0?'margin-top:8px':''}">
-      <p style="font-size:.82rem;font-weight:${i===0?700:600};line-height:1.55;color:${info.iv?'#F5A623':'inherit'}">${pt}</p>
+    function setAuthLoading(on) {
+      document.getElementById('auth-spinner').style.display = on ? 'flex' : 'none';
+      document.getElementById('auth-submit-label').style.display = on ? 'none' : 'inline';
+      document.getElementById('auth-submit-btn').disabled = on;
+      document.getElementById('google-btn').disabled = on;
+    }
+
+    function showAuthError(msg) {
+      const el = document.getElementById('auth-error');
+      el.textContent = msg; el.style.display = 'block';
+    }
+
+    async function handleEmailAuth() {
+      const fb = window.__fb;
+      if (!fb) { handleOfflineMode(); return; }
+      const email = document.getElementById('auth-email').value.trim();
+      const pass = document.getElementById('auth-password').value;
+      const confirm = document.getElementById('auth-confirm').value;
+      if (!email || !pass) { showAuthError('Please enter email and password.'); return; }
+      if (authMode === 'signup' && pass !== confirm) { showAuthError('Passwords do not match.'); return; }
+      if (authMode === 'signup' && pass.length < 6) { showAuthError('Password must be at least 6 characters.'); return; }
+      setAuthLoading(true);
+      try {
+        if (authMode === 'login') {
+          await fb.signInWithEmailAndPassword(fb.auth, email, pass);
+        } else {
+          await fb.createUserWithEmailAndPassword(fb.auth, email, pass);
+        }
+        /* onAuthStateChanged fires → showApp() called automatically */
+      } catch (e) {
+        const MSG = {
+          'auth/user-not-found': 'No account with that email.',
+          'auth/wrong-password': 'Incorrect password.',
+          'auth/email-already-in-use': 'An account with that email already exists.',
+          'auth/invalid-email': 'Please enter a valid email.',
+          'auth/too-many-requests': 'Too many attempts. Try again later.',
+          'auth/invalid-credential': 'Invalid email or password.',
+        };
+        showAuthError(MSG[e.code] || ('Error: ' + e.message));
+      } finally { setAuthLoading(false); }
+    }
+
+    async function handleGoogleAuth() {
+      const fb = window.__fb;
+      if (!fb) { handleOfflineMode(); return; }
+      setAuthLoading(true);
+      try {
+        await fb.signInWithPopup(fb.auth, fb.gProvider);
+      } catch (e) {
+        if (e.code !== 'auth/popup-closed-by-user') showAuthError('Google sign-in failed: ' + e.message);
+      } finally { setAuthLoading(false); }
+    }
+
+    async function handleSignOut() {
+      const fb = window.__fb;
+      if (fb) { try { await fb.signOut(fb.auth); } catch (e) { } }
+      showLogin();
+    }
+
+    function handleOfflineMode() {
+      /* Firebase not configured — check if placeholder config */
+      const warn = document.getElementById('config-warning');
+      if (warn) warn.style.display = 'block';
+      /* Still allow usage in offline/local mode */
+      showApp(null);
+      render();
+    }
+
+    function showLogin() {
+      document.getElementById('auth-screen').style.display = 'flex';
+      document.getElementById('app-screen').style.display = 'none';
+      applyTheme();
+    }
+
+    function showApp(user) {
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('app-screen').style.display = 'block';
+      if (user) {
+        const initials = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
+        document.getElementById('user-avatar').textContent = initials;
+        const name = user.displayName || user.email || 'User';
+        document.getElementById('user-name').textContent = name;
+        /* Photo URL for Google users */
+        if (user.photoURL) {
+          document.getElementById('user-avatar').innerHTML = `<img src="${user.photoURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover" alt="avatar"/>`;
+        }
+      }
+      document.getElementById('date-picker').value = cur;
+      applyTheme();
+      render();
+    }
+
+    /* ── Check if Firebase config is placeholder → offline mode ─ */
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        /* If module script failed silently (bad config keys) show warning */
+        if (!window.__fb) {
+          document.getElementById('config-warning').style.display = 'block';
+        }
+      }, 1500);
+    });
+
+    /* ── NAV ──────────────────────────────────────────────────── */
+    function onDatePicked(v) { cur = clamp(v); document.getElementById('date-picker').value = cur; render(); }
+    function changeDay(off) {
+      const d = new Date(cur + 'T00:00:00'); d.setDate(d.getDate() + off);
+      const n = d.toISOString().split('T')[0];
+      if (n >= '2026-11-01' && n <= '2027-02-01') { cur = n; document.getElementById('date-picker').value = cur; render(); }
+    }
+    function goToToday() { cur = clamp(new Date().toISOString().split('T')[0]); document.getElementById('date-picker').value = cur; render(); }
+
+    /* ── CHECKBOX TOGGLE ──────────────────────────────────────── */
+    function toggleCheck(k) {
+      if (!S.checks[cur]) S.checks[cur] = {};
+      S.checks[cur][k] = !S.checks[cur][k];
+      commitState();
+      renderChecks(); renderStats(); renderHeroTask();
+    }
+
+    /* ── BOX DEFS ─────────────────────────────────────────────── */
+    const BB = [
+      { id: 'c1', label: 'Coding / Logic', sub: 'Mind-Dependent Logic & Pseudocode' },
+      { id: 'c2', label: 'GATE Prep', sub: 'Math · PYQs · Subject Tests' },
+      { id: 'c3', label: 'Physique Sprint', sub: 'Peak Fitness & Body Composition' },
+    ];
+    const SB = { id: 'c4', label: 'Sem 6 Academics', sub: '8.5+ SGPA Focus' };
+
+    /* ── RENDER HERO ──────────────────────────────────────────── */
+    function renderHero() {
+      const info = T[cur]; if (!info) return;
+      const acc = PA[info.p] || PA[1];
+      const d = new Date(cur + 'T00:00:00');
+      document.getElementById('hero-phase-label').textContent = info.ph;
+      document.getElementById('hero-phase-label').style.color = acc.color;
+      document.getElementById('hero-date-display').innerHTML = info.f + '&thinsp;<span style="font-weight:300;color:#8E939D">' + WDF[d.getDay()] + '</span>';
+      renderHeroTask();
+    }
+    function renderHeroTask() {
+      const info = T[cur]; if (!info) return;
+      const total = bCount(cur), checks = S.checks[cur] || {};
+      let done = 0; for (let i = 1; i <= total; i++) if (checks['c' + i]) done++;
+      const pct = Math.round((done / total) * 100);
+      document.getElementById('hero-task-preview').textContent =
+        pct === 100 ? 'All tasks complete for this day.' : info.task.split('|')[0].trim();
+    }
+
+    /* ── RENDER BADGES ────────────────────────────────────────── */
+    function renderBadges() {
+      const info = T[cur]; if (!info) return;
+      const acc = PA[info.p] || PA[1];
+      const ab = info.at ? AM[info.at] : null;
+      const dark = S.theme === 'dark';
+      const di = Math.round((new Date(cur + 'T00:00:00') - new Date('2026-11-01T00:00:00')) / 864e5) + 1;
+      const mkPill = (txt, clr, bg) => `<span style="display:inline-flex;align-items:center;padding:0 14px;height:36px;border-radius:999px;background:${bg};color:${clr};font-size:.6rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;white-space:nowrap">${txt}</span>`;
+      let h = '';
+      h += mkPill(info.ph, acc.color, acc.bg);
+      if (ab) h += mkPill(ab.label, ab.color, ab.bg);
+      if (info.iv) h += mkPill('Industrial Visit', '#F5A623', 'rgba(245,166,35,.1)');
+      h += mkPill('Day ' + di + ' of 93', '#8E939D', dark ? 'rgba(142,147,157,.08)' : 'rgba(102,109,118,.07)');
+      document.getElementById('badge-track').innerHTML = h;
+    }
+
+    /* ── RENDER TASK BLOCK ────────────────────────────────────── */
+    function renderTaskBlock() {
+      const info = T[cur]; if (!info) return;
+      const dark = S.theme === 'dark';
+      const liftBg = dark ? '#1E202A' : '#F0F1F5';
+      const ivBg = dark ? 'rgba(245,166,35,.05)' : 'rgba(245,166,35,.07)';
+      const parts = info.task.split('|').map(s => s.trim());
+      let h = `<div style="padding:20px 22px">`;
+      h += `<p class="t-label" style="color:${info.iv ? '#F5A623' : '#8E939D'};margin-bottom:10px">${info.iv ? 'INDUSTRIAL VISIT PROTOCOL' : 'SCHEDULED FOCUS'}</p>`;
+      parts.forEach((pt, i) => {
+        h += `<div style="background:${info.iv ? ivBg : liftBg};border-radius:14px;padding:13px 15px;${i > 0 ? 'margin-top:8px' : ''}">
+      <p style="font-size:.82rem;font-weight:${i === 0 ? 700 : 600};line-height:1.55;color:${info.iv ? '#F5A623' : 'inherit'}">${pt}</p>
     </div>`;
-  });
-  h+=`</div>`;
-  const tb=document.getElementById('task-block');
-  tb.innerHTML=h; tb.style.backgroundColor=dark?'#17181F':'#FFFFFF';
-}
+      });
+      h += `</div>`;
+      const tb = document.getElementById('task-block');
+      tb.innerHTML = h; tb.style.backgroundColor = dark ? '#17181F' : '#FFFFFF';
+    }
 
-/* ── RENDER CHECKBOXES ────────────────────────────────────── */
-function bCount(d){ return d>='2027-01-01'?4:3; }
-function renderChecks(){
-  const info=T[cur]; if(!info) return;
-  const dark=S.theme==='dark';
-  const checks=S.checks[cur]||{};
-  const isJan=cur>='2027-01-01';
-  const boxes=[...BB]; if(isJan) boxes.push(SB);
-  const acc=PA[info.p]||PA[1];
-  const isIV=info.iv;
-  document.getElementById('check-count-label').textContent=boxes.length+' TASK'+(boxes.length>1?'S':'');
-  let h='';
-  boxes.forEach(b=>{
-    const chk=!!checks[b.id];
-    const bg=chk?acc.bg:(dark?'#1E202A':'#F0F1F5');
-    const tclr=chk?acc.color:'inherit';
-    const stk=chk?'text-decoration:line-through;opacity:.45':'';
-    const tbdr=chk?acc.color:(dark?'#2A2C38':'#CBD5E1');
-    const tbg=chk?acc.color:'transparent';
-    h+=`<label onclick="${isIV?'':('toggleCheck(\''+b.id+'\')')}" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;background:${bg};cursor:${isIV?'not-allowed':'pointer'};transition:all .2s cubic-bezier(.4,0,.2,1);${isIV?'opacity:.38':''}">
+    /* ── RENDER CHECKBOXES ────────────────────────────────────── */
+    function bCount(d) { return d >= '2027-01-01' ? 4 : 3; }
+    function renderChecks() {
+      const info = T[cur]; if (!info) return;
+      const dark = S.theme === 'dark';
+      const checks = S.checks[cur] || {};
+      const isJan = cur >= '2027-01-01';
+      const boxes = [...BB]; if (isJan) boxes.push(SB);
+      const acc = PA[info.p] || PA[1];
+      const isIV = info.iv;
+      document.getElementById('check-count-label').textContent = boxes.length + ' TASK' + (boxes.length > 1 ? 'S' : '');
+      let h = '';
+      boxes.forEach(b => {
+        const chk = !!checks[b.id];
+        const bg = chk ? acc.bg : (dark ? '#1E202A' : '#F0F1F5');
+        const tclr = chk ? acc.color : 'inherit';
+        const stk = chk ? 'text-decoration:line-through;opacity:.45' : '';
+        const tbdr = chk ? acc.color : (dark ? '#2A2C38' : '#CBD5E1');
+        const tbg = chk ? acc.color : 'transparent';
+        h += `<label onclick="${isIV ? '' : ('toggleCheck(\'' + b.id + '\')')}" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;background:${bg};cursor:${isIV ? 'not-allowed' : 'pointer'};transition:all .2s cubic-bezier(.4,0,.2,1);${isIV ? 'opacity:.38' : ''}">
       <div style="width:22px;height:22px;border-radius:7px;border:2px solid ${tbdr};background:${tbg};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s">
-        ${chk?`<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1.5 4.5L4 7.5L9.5 1" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`:''}
+        ${chk ? `<svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1.5 4.5L4 7.5L9.5 1" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ''}
       </div>
       <div style="flex:1;min-width:0">
         <p style="font-size:.8125rem;font-weight:700;${stk};color:${tclr};margin:0">${b.label}</p>
         <p style="font-size:.6875rem;font-weight:500;color:#8E939D;margin:2px 0 0">${b.sub}</p>
       </div>
-      <div style="width:7px;height:7px;border-radius:50%;background:${chk?acc.color:(dark?'#2A2C38':'#E3E5EC')};flex-shrink:0;transition:background .2s"></div>
+      <div style="width:7px;height:7px;border-radius:50%;background:${chk ? acc.color : (dark ? '#2A2C38' : '#E3E5EC')};flex-shrink:0;transition:background .2s"></div>
     </label>`;
-  });
-  if(isIV) h+=`<p style="text-align:center;font-size:.7rem;font-weight:600;color:#F5A623;padding:8px 0 2px;letter-spacing:.04em">Checkboxes suspended during Industrial Visit</p>`;
-  document.getElementById('check-grid').innerHTML=h;
-}
+      });
+      if (isIV) h += `<p style="text-align:center;font-size:.7rem;font-weight:600;color:#F5A623;padding:8px 0 2px;letter-spacing:.04em">Checkboxes suspended during Industrial Visit</p>`;
+      document.getElementById('check-grid').innerHTML = h;
+    }
 
-/* ── RENDER STATS ─────────────────────────────────────────── */
-function renderStats(){
-  const info=T[cur]||{p:1};
-  const total=bCount(cur), checks=S.checks[cur]||{};
-  let done=0; for(let i=1;i<=total;i++) if(checks['c'+i]) done++;
-  const pct=Math.round((done/total)*100);
-  const acc=PA[info.p]||PA[1];
-  const circ=2*Math.PI*19;
-  const ring=document.getElementById('stat-ring');
-  if(ring){ring.style.strokeDashoffset=circ*(1-pct/100);ring.setAttribute('stroke',acc.color);}
-  const dp=document.getElementById('stat-daily-pct'); if(dp) dp.textContent=pct+'%';
-  const df=document.getElementById('stat-daily-frac'); if(df) df.textContent=done+' of '+total;
-  let tp=0,tc=0;
-  Object.keys(T).forEach(d=>{const n=bCount(d);tp+=n;const dc=S.checks[d]||{};for(let i=1;i<=n;i++)if(dc['c'+i])tc++;});
-  const op=tp>0?Math.round((tc/tp)*100):0;
-  const sp=document.getElementById('stat-overall-pct'); if(sp) sp.textContent=op+'%';
-  const pb=document.getElementById('stat-overall-bar'); if(pb){pb.style.width=op+'%';pb.style.background=acc.color;}
-  const ss=document.getElementById('stat-overall-sub'); if(ss) ss.textContent=tc+' of '+tp+' tasks done';
-  /* stat grid bg */
-  const dark=S.theme==='dark';
-  const sg=document.getElementById('stat-grid'); if(sg) sg.style.background=dark?'#2A2C38':'#E3E5EC';
-  document.querySelectorAll('#stat-grid > div').forEach(el=>el.style.backgroundColor=dark?'#17181F':'#FFFFFF');
-}
+    /* ── RENDER STATS ─────────────────────────────────────────── */
+    function renderStats() {
+      const info = T[cur] || { p: 1 };
+      const total = bCount(cur), checks = S.checks[cur] || {};
+      let done = 0; for (let i = 1; i <= total; i++) if (checks['c' + i]) done++;
+      const pct = Math.round((done / total) * 100);
+      const acc = PA[info.p] || PA[1];
+      const circ = 2 * Math.PI * 19;
+      const ring = document.getElementById('stat-ring');
+      if (ring) { ring.style.strokeDashoffset = circ * (1 - pct / 100); ring.setAttribute('stroke', acc.color); }
+      const dp = document.getElementById('stat-daily-pct'); if (dp) dp.textContent = pct + '%';
+      const df = document.getElementById('stat-daily-frac'); if (df) df.textContent = done + ' of ' + total;
+      let tp = 0, tc = 0;
+      Object.keys(T).forEach(d => { const n = bCount(d); tp += n; const dc = S.checks[d] || {}; for (let i = 1; i <= n; i++)if (dc['c' + i]) tc++; });
+      const op = tp > 0 ? Math.round((tc / tp) * 100) : 0;
+      const sp = document.getElementById('stat-overall-pct'); if (sp) sp.textContent = op + '%';
+      const pb = document.getElementById('stat-overall-bar'); if (pb) { pb.style.width = op + '%'; pb.style.background = acc.color; }
+      const ss = document.getElementById('stat-overall-sub'); if (ss) ss.textContent = tc + ' of ' + tp + ' tasks done';
+      /* stat grid bg */
+      const dark = S.theme === 'dark';
+      const sg = document.getElementById('stat-grid'); if (sg) sg.style.background = dark ? '#2A2C38' : '#E3E5EC';
+      document.querySelectorAll('#stat-grid > div').forEach(el => el.style.backgroundColor = dark ? '#17181F' : '#FFFFFF');
+    }
 
-/* ── FULL RENDER ──────────────────────────────────────────── */
-function render(){
-  renderHero(); renderBadges(); renderTaskBlock(); renderChecks(); renderStats(); applyTheme();
-}
-</script>
+    /* ── FULL RENDER ──────────────────────────────────────────── */
+    function render() {
+      renderHero(); renderBadges(); renderTaskBlock(); renderChecks(); renderStats(); applyTheme();
+    }
+  </script>
 </body>
+
 </html>
